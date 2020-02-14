@@ -9,6 +9,14 @@ Created on Fri Feb 14 09:09:00 2020
 NUM_ROWS = 3
 NUM_COLUMNS = 3
 
+def printList(printList):
+    l = [[1,2, 3], [4,5,6], [7,8,9]]
+    
+    for i in printList:
+        print()
+        for j in i:
+            print(j, end = ' ')
+            
 class Game:
     
     "These are the initial and goals state variables"
@@ -27,16 +35,13 @@ class Game:
                 self.initialState.clear()
                 verifyList = []
                 
-            
-            print("You are going to enter the initial state consisting of 3 rows and 3 columns. Click enter to continue...")
+            print("Please enter an initial state consisting of 3 rows and 3 columns.")
             
             "Get the input"
             for i in range(0,NUM_ROWS):
                 listString = input("Enter a 3 number row seperated by spaces: ")
                 row = listString.split() 
                 self.initialState.append(row)
-            
-            print(self.initialState)
         
             "Verify that the input is valid and convert to int"
             verifyList = []
@@ -53,15 +58,10 @@ class Game:
             "Check to see if the list contains the numbers that it should"
             if sorted_verify == [0, 1, 2, 3, 4, 5, 6, 7, 8]:
                 validInitial = True
-                print("Your input was valid. Thank you.")
+                print()
+                print("\nYour input was valid. Thank you!")
+            else:
+                print("\nIt seems that you have inputed a number outside of the desired range. Please only enter numbers from 0 - 8 ")
             
-        print(self.initialState)
+        printList(self.initialState)
                 
-        
-def printList():
-    l = [[1,2, 3], [4,5,6], [7,8,9]]
-    
-    for i in l:
-        print()
-        for j in i:
-            print(j, end = ' ')
