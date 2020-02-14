@@ -10,18 +10,50 @@ NUM_ROWS = 3
 NUM_COLUMNS = 3
 
 def printList(printList):
-    l = [[1,2, 3], [4,5,6], [7,8,9]]
-    
+     
     for i in printList:
         print()
         for j in i:
             print(j, end = ' ')
+
+"This class is may or may not be used"           
+class currentState:
+    
+    currentStateList = []
+    possibleStateList = []
+    
+    def __init__(self, currentList):
+        
+        "Initialize the currentStateList with list entered in parameter"
+        for i in range(0, NUM_ROWS):
+            for j in range(0, NUM_COLUMNS):
+                self.currentStateList[i][j] = currentList[i][j]
+                
+    def possibleMoves(self):
+        
+        if len(self.currentStateList) < 3:
+            print("\nThe current state is not valid")
+        else:
             
+            "Row and column variables"
+            row = 0
+            column = 0
+            
+            "Get the position of 0"
+            for i in range(0, NUM_ROWS):
+                for j in range(0, NUM_COLUMNS):
+                    if self.currentStateList[i][j] == 0:
+                        row = i
+                        column = j
+            
+                    
+"This is the game class and will go through and play the 8 puzzle game"    
 class Game:
     
     "These are the initial and goals state variables"
     initialState = []
     goalState = []
+    currentState = currentState()
     
     "This function gets a valid initial state from the user"
     def getInitial(self):
@@ -40,7 +72,7 @@ class Game:
             
             "Get the input"
             for i in range(0,NUM_ROWS):
-                listString = input("Enter a 3 number row seperated by spaces: ")
+                listString = input("Enter a 3 number row with each number seperated by spaces: ")
                 row = listString.split() 
                 self.initialState.append(row)
         
@@ -82,7 +114,7 @@ class Game:
             
             "Get the input"
             for i in range(0,NUM_ROWS):
-                listString = input("Enter a 3 number row seperated by spaces: ")
+                listString = input("Enter a 3 number row with each number seperated by spaces: ")
                 row = listString.split() 
                 self.goalState.append(row)
         
