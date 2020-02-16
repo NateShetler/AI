@@ -5,7 +5,10 @@ Created on Fri Feb 14 09:09:00 2020
 @author: adm_nds39
 """
 
-"Contants for the Program"
+from queue import PriorityQueue
+import copy
+
+"Constants for the Program"
 NUM_ROWS = 3
 NUM_COLUMNS = 3
 
@@ -53,7 +56,10 @@ class Game:
     "These are the initial and goals state variables"
     initialState = []
     goalState = []
-    currentState = currentState()
+    
+    "This variable keeps track of the current state"
+    previousState = []
+    currentState = []
     
     "This function gets a valid initial state from the user"
     def getInitial(self):
@@ -68,7 +74,7 @@ class Game:
                 self.initialState.clear()
                 verifyList = []
                 
-            print("/nPlease enter an initial state consisting of 3 rows and 3 columns.")
+            print("\nPlease enter an initial state consisting of 3 rows and 3 columns.")
             
             "Get the input"
             for i in range(0,NUM_ROWS):
@@ -139,6 +145,9 @@ class Game:
             
         printList(self.goalState)
              
+    "Mutator function for currentState"
+    def updateCurrentState(self, newState):
+        self.currentState = copy.deepcopy(newState)
         
     "This function calculates the Hamming priority for the game"
     def getHamming(self, numMoves, currentState):
@@ -149,11 +158,122 @@ class Game:
         "Go through the initial and goal states to see how many are out of position"
         for i in range(0, NUM_ROWS):
             for j in range(0, NUM_COLUMNS):
-                if self.goalState[i][j] != currentState[i][j]:
-                    hammingPriority += 1
+                if currentState[i][j] != 0:
+                    if self.goalState[i][j] != currentState[i][j]:
+                        hammingPriority += 1
                     
         hammingPriority += numMoves
         
         return hammingPriority
+    
+    "Pre: This will take in the list (in form described by NUM_ROWS & NUM_COLUMNS) and then convert it to a hash value"
+    "Post: This will return a hash value"
+    def hashList(self, hashList):
+        
+        "List for converting the list passed in"
+        convertList = []
+        for i in range(0, NUM_ROWS):
+            for j in range(0, NUM_COLUMNS):
+                convertList.append(hashList[i][j])
+                
+        return(hash(tuple(convertList)))
+    
+    def howManyNeighbors(self):
+        "Will return how many neighbor states there are"
+        if self.currentState[1][1] == 0:
+            return 4
+        elif self.currentState[0][0] == 0 or self.currentState[0][2] == 0 or self.currentState[2][0] == 0 or self.currentState[2][2] == 0:
+            return 2
+        else:
+            return 3
+    
+    "This function will return a list of possible states (neighbor states)"
+    def neighborStates(self):
+        
+        "The neigboring state list that will be returned"
+        neighborList = []
+        
+        if self.currentState[0][0] == 0:
+            neighborList.append([[self.currentState[0][1],0,self.currentState[0][2]],[self.currentState[1][0],self.currentState[1][1],self.currentState[1][2]],[self.currentState[2][0],self.currentState[2][1],self.currentState[2][2]]])
+            neighborList.append([[self.currentState[1][0],self.currentState[0][1],self.currentState[0][2]],[0,self.currentState[1][1],self.currentState[1][2]],[self.currentState[2][0],self.currentState[2][1],self.currentState[2][2]]])
+            return neighborList
+        elif self.currentState[0][1] == 0:
+            neighborList.append([[0,self.currentState[0][0],self.currentState[0][2]], [self.currentState[1][0],self.currentState[1][1],self.currentState[1][2]],[self.currentState[2][0],self.currentState[2][1],self.currentState[2][2]]])
+            neighborList.append([[self.currentState[0][0],self.currentState[1][1],self.currentState[0][2]],[self.currentState[1][0],0,self.currentState[1][2]],[self.currentState[2][0],self.currentState[2][1],self.currentState[2][2]]])
+            neighborList.append([[self.currentState[0][0],self.currentState[0][2],0], [self.currentState[1][0],self.currentState[1][1],self.currentState[1][2]],[self.currentState[2][0],self.currentState[2][1],self.currentState[2][2]]])
+            return neighborList
+        elif self.currentState[0][2] == 0:
+            neighborList.append([[self.currentState[0][0],0,self.currentState[0][1]],[self.currentState[1][0],self.currentState[1][1],self.currentState[1][2]],[self.currentState[2][0],self.currentState[2][1],self.currentState[2][2]]])
+            neighborList.append([[self.currentState[0][0],self.currentState[0][1],self.currentState[1][2]],[self.currentState[1][0],self.currentState[1][1],0],[self.currentState[2][0],self.currentState[2][1],self.currentState[2][2]]])
+            return neighborList
+        elif self.currentState[1][0] == 0:
+            neighborList.append([[0,self.currentState[0][1],self.currentState[0][2]],[self.currentState[0][0],self.currentState[1][1],self.currentState[1][2]],[self.currentState[2][0],self.currentState[2][1],self.currentState[2][2]]])
+            neighborList.append([[self.currentState[0][0],self.currentState[0][1],self.currentState[0][2]],[self.currentState[1][1],0,self.currentState[1][2]],[self.currentState[2][0],self.currentState[2][1],self.currentState[2][2]]])
+            neighborList.append([[self.currentState[0][0],self.currentState[0][1],self.currentState[0][2]],[self.currentState[2][0],self.currentState[1][1],self.currentState[1][2]],[0,self.currentState[2][1],self.currentState[2][2]]])
+            return neighborList
+        elif self.currentState[1][1] == 0:
+            neighborList.append([[self.currentState[0][0],0,self.currentState[0][2]],[self.currentState[1][0],self.currentState[0][1],self.currentState[1][2]],[self.currentState[2][0],self.currentState[2][1],self.currentState[2][2]]])
+            neighborList.append([[self.currentState[0][0],self.currentState[0][1],self.currentState[0][2]],[0,self.currentState[1][0],self.currentState[1][2]],[self.currentState[2][0],self.currentState[2][1],self.currentState[2][2]]])
+            neighborList.append([[self.currentState[0][0],self.currentState[0][1],self.currentState[0][2]],[self.currentState[1][0],self.currentState[1][2],0],[self.currentState[2][0],self.currentState[2][1],self.currentState[2][2]]])
+            neighborList.append([[self.currentState[0][0],self.currentState[0][1],self.currentState[0][2]],[self.currentState[1][0],self.currentState[2][1],self.currentState[1][2]],[self.currentState[2][0],0,self.currentState[2][2]]])
+            return neighborList
+        elif self.currentState[1][2] == 0:
+            neighborList.append([[self.currentState[0][0],self.currentState[0][1],0],[self.currentState[1][0],self.currentState[1][1],self.currentState[0][2]],[self.currentState[2][0],self.currentState[2][1],self.currentState[2][2]]])
+            neighborList.append([[self.currentState[0][0],self.currentState[0][1],self.currentState[0][2]],[self.currentState[1][0],0,self.currentState[1][1]],[self.currentState[2][0],self.currentState[2][1],self.currentState[2][2]]])
+            neighborList.append([[self.currentState[0][0],self.currentState[0][1],self.currentState[0][2]],[self.currentState[1][0],self.currentState[1][1],self.currentState[2][2]],[self.currentState[2][0],self.currentState[2][1],0]])
+            return neighborList
+        elif self.currentState[2][0] == 0:
+            neighborList.append([[self.currentState[0][0],self.currentState[0][1],self.currentState[0][2]],[0,self.currentState[1][1],self.currentState[1][2]],[self.currentState[1][0],self.currentState[2][1],self.currentState[2][2]]])
+            neighborList.append([[self.currentState[0][0],self.currentState[0][1],self.currentState[0][2]],[self.currentState[1][0],self.currentState[1][1],self.currentState[1][2]],[self.currentState[2][1],0,self.currentState[2][2]]])
+            return neighborList
+        elif self.currentState[2][1] == 0:
+            neighborList.append([[self.currentState[0][0],self.currentState[0][1],self.currentState[0][2]],[self.currentState[1][0],self.currentState[1][1],self.currentState[1][2]],[0,self.currentState[2][0],self.currentState[2][2]]])
+            neighborList.append([[self.currentState[0][0],self.currentState[0][1],self.currentState[0][2]],[self.currentState[1][0],0,self.currentState[1][2]],[self.currentState[2][0],self.currentState[1][1],self.currentState[2][2]]])
+            neighborList.append([[self.currentState[0][0],self.currentState[0][1],self.currentState[0][2]],[self.currentState[1][0],self.currentState[1][1],self.currentState[1][2]],[self.currentState[2][0],self.currentState[2][2],0]])
+            return neighborList
+        else:
+            neighborList.append([[self.currentState[0][0],self.currentState[0][1],self.currentState[0][2]],[self.currentState[1][0],self.currentState[1][1],self.currentState[1][2]],[self.currentState[2][0],0,self.currentState[2][1]]])
+            neighborList.append([[self.currentState[0][0],self.currentState[0][1],self.currentState[0][2]],[self.currentState[1][0],self.currentState[1][1],0],[self.currentState[2][0],self.currentState[2][1],self.currentState[1][2]]])
+            return neighborList
+            
+class Play:
+    
+    game = Game()
+    
+    def playGame(self):
+        "Create game object"
+        game = Game()
+    
+        "Get initial and goal states"
+        game.getInitial()
+        game.getGoal()
+    
+        "Boolean that will be used to keep track if puzzle is solved"
+        solved = False
+        
+        "Priority Queue for the states"
+        pq = PriorityQueue()
+        
+        "Push on intial state and neighbors"
+        
+        "Play until goal is reached"
+        while solved == False:
+            
+            
+def n_puzzle():
+    
+    "Create game object"
+    game = Game()
+    
+    "Get initial and goal states"
+    game.getInitial()
+    game.getGoal()
+    
+    "Boolean that will be used to keep track if puzzle is solved"
+    solved = False
+    
+        
+    
+        
         
         
