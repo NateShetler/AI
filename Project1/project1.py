@@ -12,44 +12,39 @@ import copy
 NUM_ROWS = 3
 NUM_COLUMNS = 3
 
+"Pre: This function will accept in a list"
+"Post: This function will print out the list to standard output"
 def printList(printList):
      
     for i in printList:
         print()
         for j in i:
             print(j, end = ' ')
+     
+"Pre: This function will accept in a list and a file"
+"Post: This function will write the list to the file"
+def writeList(writeList, file):
+     
+    for i in writeList:
+        file.write("\n")
+        for j in i:
+            file.write(str(j) + " ")
+            
+    file.write("\n")
+            
 
-"This class is may or may not be used"           
-class currentState:
+"Pre: This function will accept the inital state and goal state. This will check if the 8 puzzle game is solvable or not"
+"Post: This function returns true if it is solvable and false otherwise"
+def isSolvable(initial, goal):
     
-    currentStateList = []
-    possibleStateList = []
     
-    def __init__(self, currentList):
-        
-        "Initialize the currentStateList with list entered in parameter"
-        for i in range(0, NUM_ROWS):
-            for j in range(0, NUM_COLUMNS):
-                self.currentStateList[i][j] = currentList[i][j]
-                
-    def possibleMoves(self):
-        
-        if len(self.currentStateList) < 3:
-            print("\nThe current state is not valid")
-        else:
-            
-            "Row and column variables"
-            row = 0
-            column = 0
-            
-            "Get the position of 0"
-            for i in range(0, NUM_ROWS):
-                for j in range(0, NUM_COLUMNS):
-                    if self.currentStateList[i][j] == 0:
-                        row = i
-                        column = j
-            
-                    
+    "This will be used to calculate the number of inversions needed"
+    inversionNum = 0
+     
+    for i in range(0, NUM_ROWS):
+        for j in range(0, NUM_COLUMNS):
+            " "
+                 
 "This is the game class and will go through and play the 8 puzzle game"    
 class Game:
     
@@ -98,10 +93,13 @@ class Game:
             if sorted_verify == [0, 1, 2, 3, 4, 5, 6, 7, 8]:
                 validInitial = True
                 print("\nYour input was valid. Thank you!")
+                print()
             else:
                 print("\nIt seems that you have inputed a number outside of the desired range. Please only enter numbers from 0 - 8 ")
-            
+        
+        print("The initial state is: ")
         printList(self.initialState)
+        print()
         
     "This function gets a valid goal state from the user"
     def getGoal(self):
@@ -140,16 +138,21 @@ class Game:
             if sorted_verify == [0, 1, 2, 3, 4, 5, 6, 7, 8]:
                 validGoal = True
                 print("\nYour input was valid. Thank you!")
+                print()
             else:
                 print("\nIt seems that you have inputed a number outside of the desired range. Please only enter numbers from 0 - 8 ")
         
         print("The Goal State is: ")
         printList(self.goalState)
-        print()
+        print("\n")
              
     "Mutator function for currentState"
     def updateCurrentState(self, newState):
         self.currentState = copy.deepcopy(newState)
+        
+    "Mutator function for previousState"
+    def updatePreviousState(self, newState):
+        self.previousState = copy.deepcopy(newState)
         
     "This function calculates the Hamming priority for the game"
     def getHamming(self, numMoves, currentState):
@@ -245,13 +248,22 @@ class Play:
     def playGame(self):
         "Create game object"
         game = Game()
-    
+        
+        "This will be the file used to store the sequence"
+        file = open("8puzzlelog.txt", "w")
+        
         "Get initial and goal states"
         game.getInitial()
         game.getGoal()
         
         "Set currentState to initial state"
         game.updateCurrentState(game.initialState)
+        
+        "Write initial state to file"
+        writeList(game.currentState, file)
+        
+        "Set initial previous state to all 0's"
+        game.updatePreviousState([[0,0,0],[0,0,0], [0,0,0]])
         
         "For keeping track of how many moves"
         numMoves = 0
@@ -277,30 +289,58 @@ class Play:
         "Play until goal is reached"
         while solved == False:
             
-            "Get the new current state from the priority queue"
+            "Get the current list from the priority queue"
             currentStateList = pq.get()[1]
+            
+            "Make sure the new state is not the same as the previous state"
+            if (currentStateList == game.previousState):
+                while (currentStateList == game.previousState):
+                    "Get the new current state from the priority queue"
+                    currentStateList = pq.get()[1]
+            
+                    "Make the previous state the current state"
+                    game.updatePreviousState(game.currentState)
+            
+            
+            "Make the previous state the current state"
+            game.updatePreviousState(game.currentState)
             
             "Update the currentState"
             game.updateCurrentState(currentStateList)
             
+            "Add one to the move counter"
+            numMoves += 1
+            
+            "If the currentState is the goal state"
             if (game.currentState == game.goalState):
+                
+                "Set solved to true"
                 solved = True
                 
-                "Print solved puzzle"
-                print()
-                print("The puzzle has been sovled!")
-                printList(currentStateList)
+                print("The puzzle has been sovled!\n")
+                
+                "Write to file the solved puzzle"
+                writeList(currentStateList, file)
+                
+                "Close write file"
+                file.close()
+                
+                "Open readfile"
+                readFile = open("8puzzlelog.txt", "r")
+                
+                "Output the sequence log"
+                print("The sequence that it was solved in is: ")
+                print(readFile.read())
+                
+                "Close read file"
+                readFile.close()
+                
+                print("It took " + str(numMoves) + " moves to solve the puzzle.")
                 
             else:
                 
-                "Add one to the move counter"
-                numMoves += 1
-                
-                "Print new current List"
-                printList(currentStateList)
-                
-                "This print is for nicer output"
-                print()
+                "Write to file"
+                writeList(currentStateList, file)
                 
                 "Update neighborList and put the new neighbors states on the queue"
                 neighborList = game.neighborStates()
