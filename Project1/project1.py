@@ -52,7 +52,7 @@ class Game:
     initialState = []
     goalState = []
     
-    "This variable keeps track of the current state"
+    "These variables keep track of the current and previous states"
     previousState = []
     currentState = []
     
@@ -243,9 +243,7 @@ class Game:
             
 class Play:
     
-    game = Game()
-    
-    def playGame(self):
+    def startGame(self):
         "Create game object"
         game = Game()
         
@@ -352,15 +350,8 @@ class Play:
             
 def n_puzzle():
     
-    "Create game object"
-    game = Game()
-    
-    "Get initial and goal states"
-    game.getInitial()
-    game.getGoal()
-    
-    "Boolean that will be used to keep track if puzzle is solved"
-    solved = False
+    game = Play()
+    game.startGame()
     
         
     
