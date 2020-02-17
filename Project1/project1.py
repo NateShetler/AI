@@ -142,8 +142,10 @@ class Game:
                 print("\nYour input was valid. Thank you!")
             else:
                 print("\nIt seems that you have inputed a number outside of the desired range. Please only enter numbers from 0 - 8 ")
-            
+        
+        print("The Goal State is: ")
         printList(self.goalState)
+        print()
              
     "Mutator function for currentState"
     def updateCurrentState(self, newState):
@@ -247,7 +249,13 @@ class Play:
         "Get initial and goal states"
         game.getInitial()
         game.getGoal()
-    
+        
+        "Set currentState to initial state"
+        game.updateCurrentState(game.initialState)
+        
+        "For keeping track of how many moves"
+        numMoves = 0
+        
         "Boolean that will be used to keep track if puzzle is solved"
         solved = False
         
@@ -255,9 +263,51 @@ class Play:
         pq = PriorityQueue()
         
         "Push on intial state and neighbors"
+        pq.put((game.getHamming(numMoves, game.currentState), game.initialState))
         
+        "Get the neighbor list and number of neighbors"
+        neighborList = game.neighborStates()
+        numNeighbors = game.howManyNeighbors()
+        
+        "Put the neighbors on the priority queue"
+        for i in range(0, numNeighbors):
+            pq.put((game.getHamming(numMoves, neighborList[i]), neighborList[i]))
+            
+            
         "Play until goal is reached"
         while solved == False:
+            
+            "Get the new current state from the priority queue"
+            currentStateList = pq.get()[1]
+            
+            "Update the currentState"
+            game.updateCurrentState(currentStateList)
+            
+            if (game.currentState == game.goalState):
+                solved = True
+                
+                "Print solved puzzle"
+                print()
+                print("The puzzle has been sovled!")
+                printList(currentStateList)
+                
+            else:
+                
+                "Add one to the move counter"
+                numMoves += 1
+                
+                "Print new current List"
+                printList(currentStateList)
+                
+                "This print is for nicer output"
+                print()
+                
+                "Update neighborList and put the new neighbors states on the queue"
+                neighborList = game.neighborStates()
+                numNeighbors = game.howManyNeighbors()
+                
+                for i in range(0, numNeighbors):
+                    pq.put((game.getHamming(numMoves, neighborList[i]), neighborList[i]))
             
             
 def n_puzzle():
