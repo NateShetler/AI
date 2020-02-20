@@ -171,18 +171,6 @@ class Game:
         
         return hammingPriority
     
-    "Pre: This will take in the list (in form described by NUM_ROWS & NUM_COLUMNS) and then convert it to a hash value"
-    "Post: This will return a hash value"
-    def hashList(self, hashList):
-        
-        "List for converting the list passed in"
-        convertList = []
-        for i in range(0, NUM_ROWS):
-            for j in range(0, NUM_COLUMNS):
-                convertList.append(hashList[i][j])
-                
-        return(hash(tuple(convertList)))
-    
     def howManyNeighbors(self):
         "Will return how many neighbor states there are"
         if self.currentState[1][1] == 0:
@@ -240,7 +228,103 @@ class Game:
             neighborList.append([[self.currentState[0][0],self.currentState[0][1],self.currentState[0][2]],[self.currentState[1][0],self.currentState[1][1],self.currentState[1][2]],[self.currentState[2][0],0,self.currentState[2][1]]])
             neighborList.append([[self.currentState[0][0],self.currentState[0][1],self.currentState[0][2]],[self.currentState[1][0],self.currentState[1][1],0],[self.currentState[2][0],self.currentState[2][1],self.currentState[1][2]]])
             return neighborList
+        
+    "This function will keep track of the correct sequence by using a stack"
+    "Pre: The state that needs to be checked and the stack for the correct sequence"
+    "Post: The stack, making sure that all of it's memebers are neighbors"
+    def isNeighbor(self, currentState, stack):
+        
+        "Booleans for the loop"
+        neighborFound = False
             
+        "For the top state/item on the stack"
+        topItem = []
+            
+        "If the stack is empty when passed in, that means it is at the beginning of the game"
+        "so we will append to the stack and return it"
+        if len(stack) == 0:
+            stack.append(currentState)
+            return stack
+        
+        "Loop for going through the stack until a neighbor is found or end of stack is reached"
+        while neighborFound == False:
+            if len(stack) > 0:
+                
+                "Get the top item off the stack"
+                topItem = stack.pop()
+                
+                "See if the currentState is a neighbor of the top value"
+                if currentState[0][0] == 0:
+                    if topItem[0][1] == 0:
+                        neighborFound = True
+                    elif topItem[1][1] == 0:
+                        neighborFound = True
+                elif currentState[0][1] == 0:
+                    if topItem[0][0] == 0:
+                        neighborFound = True
+                    elif topItem[0][2] == 0:
+                        neighborFound = True
+                    elif topItem[1][1] == 0:
+                        neighborFound = True
+                elif currentState[0][2] == 0:
+                    if topItem[0][1] == 0:
+                        neighborFound = True
+                    elif topItem[1][2] == 0:
+                        neighborFound = True
+                elif currentState[1][0] == 0:
+                    if topItem[0][0] == 0:
+                        neighborFound = True
+                    elif topItem[1][1] == 0:
+                        neighborFound = True
+                    elif topItem[2][0] == 0:
+                        neighborFound = True
+                elif currentState[1][1] == 0:
+                    if topItem[0][1] == 0:
+                        neighborFound = True
+                    elif topItem[1][0] == 0:
+                        neighborFound = True
+                    elif topItem[1][2] == 0:
+                        neighborFound = True
+                    elif topItem[2][1] == 0:
+                        neighborFound = True
+                elif currentState[1][2] == 0:
+                    if topItem[0][2] == 0:
+                        neighborFound = True
+                    elif topItem[1][1] == 0:
+                        neighborFound = True
+                    elif topItem[2][2] == 0:
+                        neighborFound = True
+                elif currentState[2][0] == 0:
+                    if topItem[1][0] == 0:
+                        neighborFound = True
+                    elif topItem[2][1] == 0:
+                        neighborFound = True
+                elif currentState[2][1] == 0:
+                    if topItem[1][1] == 0:
+                        neighborFound = True
+                    elif topItem[2][0] == 0:
+                        neighborFound = True
+                    elif topItem[2][2] == 0:
+                        neighborFound = True
+                else:
+                    if topItem[1][2] == 0:
+                        neighborFound = True
+                    elif topItem[2][1] == 0:
+                        neighborFound = True
+                        
+                "Check to see if a neighbor was found"
+                if neighborFound == True:
+                    stack.append(topItem)
+                
+            else:
+                neighborFound = True
+            
+        "Put the original current state on the stack"
+        stack.append(currentState)
+        
+        return stack
+            
+                    
 class Play:
     
     def startGame(self):
@@ -281,6 +365,12 @@ class Play:
         "To keep track of states"
         checked = []
         
+        "This list that will function as a stack will keep track of the correct wining sequence"
+        stack = []
+        
+        "Append the initial state to the stack"
+        stack.append(game.initialState)
+        
         "Play until goal is reached"
         while solved == False:
             
@@ -290,7 +380,9 @@ class Play:
             "If state is not in the checked list, add it"
             if currentStateList not in checked: 
                 checked.append(currentStateList)
-                
+                "Add to the stack if necessary"
+                stack = game.isNeighbor(currentStateList, stack)
+            
             "Make the previous state the current state"
             game.updatePreviousState(game.currentState)
             
@@ -333,6 +425,8 @@ class Play:
                 
                 print(numEnqueues)
                 
+                print(stack)
+                
             else:
                 
                 "Write to file"
@@ -348,13 +442,20 @@ class Play:
                     if pq.empty() == False:
                         pq.get()
                 """
+                numEnqueues = 0 
+                
                 "If the state is not the previous state and hasn't been checked before then add to pq"
                 for i in range(0, numNeighbors):
                     if game.previousState != neighborList[i] and neighborList[i] not in checked: 
                         pq.put((game.getHamming(numMoves, neighborList[i]), neighborList[i]))
+
+                        
                         numEnqueues += 1
                 
-            
+                if numEnqueues == 0:
+                    print("Reached a dead end")
+                    file.write("Reached a dead end")
+                    
 def n_puzzle():
     
     game = Play()
