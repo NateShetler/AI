@@ -6,7 +6,6 @@ Created on Fri Feb 14 09:09:00 2020
 """
 
 from queue import PriorityQueue
-from sets import Set
 import copy
 
 "Constants for the Program"
@@ -279,7 +278,8 @@ class Play:
         "Keep track of number of neighbors for previous state"
         numPrevNeighbors = 0
         
-        
+        "To keep track of states"
+        checked = []
         
         "Play until goal is reached"
         while solved == False:
@@ -287,6 +287,10 @@ class Play:
             "Get the current list from the priority queue"
             currentStateList = pq.get()[1]
             
+            "If state is not in the checked list, add it"
+            if currentStateList not in checked: 
+                checked.append(currentStateList)
+                
             "Make the previous state the current state"
             game.updatePreviousState(game.currentState)
             
@@ -344,9 +348,9 @@ class Play:
                     if pq.empty() == False:
                         pq.get()
                 """
-                
+                "If the state is not the previous state and hasn't been checked before then add to pq"
                 for i in range(0, numNeighbors):
-                    if game.previousState != neighborList[i]: 
+                    if game.previousState != neighborList[i] and neighborList[i] not in checked: 
                         pq.put((game.getHamming(numMoves, neighborList[i]), neighborList[i]))
                         numEnqueues += 1
                 
