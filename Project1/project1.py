@@ -6,6 +6,7 @@ Created on Fri Feb 14 09:09:00 2020
 """
 
 from queue import PriorityQueue
+from sets import Set
 import copy
 
 "Constants for the Program"
@@ -163,7 +164,7 @@ class Game:
         "Go through the initial and goal states to see how many are out of position"
         for i in range(0, NUM_ROWS):
             for j in range(0, NUM_COLUMNS):
-                if currentState[i][j] != 0:
+                if self.goalState[i][j] != 0:
                     if self.goalState[i][j] != currentState[i][j]:
                         hammingPriority += 1
                     
@@ -257,11 +258,8 @@ class Play:
         "Set currentState to initial state"
         game.updateCurrentState(game.initialState)
         
-        "Write initial state to file"
-        writeList(game.currentState, file)
-        
         "Set initial previous state to all 0's"
-        game.updatePreviousState([[0,0,0],[0,0,0], [0,0,0]])
+        game.updatePreviousState([[0,0,0],[0,0,0],[0,0,0]])
         
         "For keeping track of how many moves"
         numMoves = 0
@@ -274,34 +272,25 @@ class Play:
         
         "Push on intial state and neighbors"
         pq.put((game.getHamming(numMoves, game.currentState), game.initialState))
-        
-        "Get the neighbor list and number of neighbors"
-        neighborList = game.neighborStates()
-        numNeighbors = game.howManyNeighbors()
-        
-        "Put the neighbors on the priority queue"
-        for i in range(0, numNeighbors):
-            pq.put((game.getHamming(numMoves, neighborList[i]), neighborList[i]))
             
-            
+        "Will keep track of how many enqueus"
+        numEnqueues = 1
+        
+        "Keep track of number of neighbors for previous state"
+        numPrevNeighbors = 0
+        
+        
+        
         "Play until goal is reached"
         while solved == False:
             
             "Get the current list from the priority queue"
             currentStateList = pq.get()[1]
             
-            "Make sure the new state is not the same as the previous state"
-            if (currentStateList == game.previousState):
-                while (currentStateList == game.previousState):
-                    "Get the new current state from the priority queue"
-                    currentStateList = pq.get()[1]
-            
-                    "Make the previous state the current state"
-                    game.updatePreviousState(game.currentState)
-            
-            
             "Make the previous state the current state"
             game.updatePreviousState(game.currentState)
+            
+            numPrevNeighbors = game.howManyNeighbors()
             
             "Update the currentState"
             game.updateCurrentState(currentStateList)
@@ -333,7 +322,12 @@ class Play:
                 "Close read file"
                 readFile.close()
                 
+                "Subtract 1 from numMoves because it counted initial state as a move at the beginning"
+                numMoves -= 1
+                
                 print("It took " + str(numMoves) + " moves to solve the puzzle.")
+                
+                print(numEnqueues)
                 
             else:
                 
@@ -344,9 +338,18 @@ class Play:
                 neighborList = game.neighborStates()
                 numNeighbors = game.howManyNeighbors()
                 
+                """"
+                "Remove old neighbors"
+                for i in range(0, numPrevNeighbors):
+                    if pq.empty() == False:
+                        pq.get()
+                """
+                
                 for i in range(0, numNeighbors):
-                    pq.put((game.getHamming(numMoves, neighborList[i]), neighborList[i]))
-            
+                    if game.previousState != neighborList[i]: 
+                        pq.put((game.getHamming(numMoves, neighborList[i]), neighborList[i]))
+                        numEnqueues += 1
+                
             
 def n_puzzle():
     
