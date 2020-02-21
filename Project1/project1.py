@@ -69,18 +69,113 @@ def closeToGoal(currentState, goalState):
     
     return hammingPriority
     
+def nextTo(state1, state2):
     
+    neighborFound = False
+    
+    "See if the currentState is a neighbor of the top value"
+    if state1[0][0] == 0:
+        if state2[0][1] == 0:
+            neighborFound = True
+        elif state2[1][1] == 0:
+            neighborFound = True
+    elif state1[0][1] == 0:
+        if state2[0][0] == 0:
+            neighborFound = True
+        elif state2[0][2] == 0:
+            neighborFound = True
+        elif state2[1][1] == 0:
+            neighborFound = True
+    elif state1[0][2] == 0:
+        if state2[0][1] == 0:
+            neighborFound = True
+        elif state2[1][2] == 0:
+            neighborFound = True
+    elif state1[1][0] == 0:
+        if state2[0][0] == 0:
+            neighborFound = True
+        elif state2[1][1] == 0:
+            neighborFound = True
+        elif state2[2][0] == 0:
+            neighborFound = True
+    elif state1[1][1] == 0:
+        if state2[0][1] == 0:
+            neighborFound = True
+        elif state2[1][0] == 0:
+            neighborFound = True
+        elif state2[1][2] == 0:
+            neighborFound = True
+        elif state2[2][1] == 0:
+            neighborFound = True
+    elif state1[1][2] == 0:
+        if state2[0][2] == 0:
+            neighborFound = True
+        elif state2[1][1] == 0:
+            neighborFound = True
+        elif state2[2][2] == 0:
+            neighborFound = True
+    elif state1[2][0] == 0:
+        if state2[1][0] == 0:
+            neighborFound = True
+        elif state2[2][1] == 0:
+            neighborFound = True
+    elif state1[2][1] == 0:
+        if state2[1][1] == 0:
+            neighborFound = True
+        elif state2[2][0] == 0:
+            neighborFound = True
+        elif state2[2][2] == 0:
+            neighborFound = True
+    elif state1[2][2]:
+        if state2[1][2] == 0:
+            neighborFound = True
+        elif state2[2][1] == 0:
+            neighborFound = True
+            
+    return neighborFound
+            
+            
 "Pre: This function will accept the inital state and goal state. This will check if the 8 puzzle game is solvable or not"
 "Post: This function returns true if it is solvable and false otherwise"
 def isSolvable(initial, goal):
     
-    
     "This will be used to calculate the number of inversions needed"
-    inversionNum = 0
-     
+    offSetNum = 0
+    
+    "Used for the 1D arrays"
+    initial1D = []
+    goal1D = []
+    
+    "Used for the subtraction"
+    oddEven = 0
+    
+    "Convert the 2d lists to 1d lists"
     for i in range(0, NUM_ROWS):
         for j in range(0, NUM_COLUMNS):
-            " "
+            initial1D.append(initial[i][j])
+            goal1D.append(goal[i][j])
+    
+    print(initial1D)
+    print(goal1D)
+    
+    "See the offset of the numbers"
+    for i in range(0, len(goal1D)):
+        if goal1D[i] != 0:
+            oddEven = abs((i) - initial1D.index(goal1D[i]))
+            if oddEven % 2 != 0:
+                offSetNum += 1
+            
+            print(oddEven)
+        else:
+            oddEven = 0
+    
+    "Return True if the offset number is even then it is solvable and return true"
+    "If offset number is odd then it is not solvable and return false"
+    print(offSetNum)
+    if offSetNum % 2 == 0:
+        return True
+    else:
+        return False
                  
 "This is the game class and will go through and play the 8 puzzle game"    
 class Game:
@@ -115,14 +210,14 @@ class Game:
                 self.initialState.append(row)
         
             "Verify that the input is valid and convert to int"
-            verifyList = []
-            for i in range(0, NUM_ROWS):
-                for j in range(0, NUM_COLUMNS):
-                    try:
+            try:
+                verifyList = []
+                for i in range(0, NUM_ROWS):
+                    for j in range(0, NUM_COLUMNS):
                         self.initialState[i][j] = int(self.initialState[i][j])
                         verifyList.append(self.initialState[i][j])
-                    except:
-                        print("Incorrect input. Please enter only numbers from 0 - 8")
+            except:
+                print("\nIncorrect input.")
             
             sorted_verify = sorted(verifyList)
             
@@ -160,14 +255,14 @@ class Game:
                 self.goalState.append(row)
         
             "Verify that the input is valid and convert to int"
-            verifyList = []
-            for i in range(0, NUM_ROWS):
-                for j in range(0, NUM_COLUMNS):
-                    try:
+            try: 
+                verifyList = []
+                for i in range(0, NUM_ROWS):
+                    for j in range(0, NUM_COLUMNS):
                         self.goalState[i][j] = int(self.goalState[i][j])
                         verifyList.append(self.goalState[i][j])
-                    except:
-                        print("Incorrect input. Please enter only numbers from 0 - 8")
+            except:
+                print("\nIncorrect input.")
             
             sorted_verify = sorted(verifyList)
             
@@ -191,8 +286,9 @@ class Game:
     def updatePreviousState(self, newState):
         self.previousState = copy.deepcopy(newState)
     
+    "Will return how many neighbor states there are"
     def howManyNeighbors(self):
-        "Will return how many neighbor states there are"
+        
         if self.currentState[1][1] == 0:
             return 4
         elif self.currentState[0][0] == 0 or self.currentState[0][2] == 0 or self.currentState[2][0] == 0 or self.currentState[2][2] == 0:
@@ -249,100 +345,6 @@ class Game:
             neighborList.append([[self.currentState[0][0],self.currentState[0][1],self.currentState[0][2]],[self.currentState[1][0],self.currentState[1][1],0],[self.currentState[2][0],self.currentState[2][1],self.currentState[1][2]]])
             return neighborList
         
-    "This function will keep track of the correct sequence by using a stack"
-    "Pre: The state that needs to be checked and the stack for the correct sequence"
-    "Post: The stack, making sure that all of it's memebers are neighbors"
-    def isNeighbor(self, currentState, stack):
-        
-        "Booleans for the loop"
-        neighborFound = False
-            
-        "For the top state/item on the stack"
-        topItem = []
-            
-        "If the stack is empty when passed in, that means it is at the beginning of the game"
-        "so we will append to the stack and return it"
-        if len(stack) == 0:
-            stack.append(currentState)
-            return stack
-        
-        "Loop for going through the stack until a neighbor is found or end of stack is reached"
-        while neighborFound == False:
-            if len(stack) > 0:
-                
-                "Get the top item off the stack"
-                topItem = stack.pop()
-                
-                "See if the currentState is a neighbor of the top value"
-                if currentState[0][0] == 0:
-                    if topItem[0][1] == 0:
-                        neighborFound = True
-                    elif topItem[1][1] == 0:
-                        neighborFound = True
-                elif currentState[0][1] == 0:
-                    if topItem[0][0] == 0:
-                        neighborFound = True
-                    elif topItem[0][2] == 0:
-                        neighborFound = True
-                    elif topItem[1][1] == 0:
-                        neighborFound = True
-                elif currentState[0][2] == 0:
-                    if topItem[0][1] == 0:
-                        neighborFound = True
-                    elif topItem[1][2] == 0:
-                        neighborFound = True
-                elif currentState[1][0] == 0:
-                    if topItem[0][0] == 0:
-                        neighborFound = True
-                    elif topItem[1][1] == 0:
-                        neighborFound = True
-                    elif topItem[2][0] == 0:
-                        neighborFound = True
-                elif currentState[1][1] == 0:
-                    if topItem[0][1] == 0:
-                        neighborFound = True
-                    elif topItem[1][0] == 0:
-                        neighborFound = True
-                    elif topItem[1][2] == 0:
-                        neighborFound = True
-                    elif topItem[2][1] == 0:
-                        neighborFound = True
-                elif currentState[1][2] == 0:
-                    if topItem[0][2] == 0:
-                        neighborFound = True
-                    elif topItem[1][1] == 0:
-                        neighborFound = True
-                    elif topItem[2][2] == 0:
-                        neighborFound = True
-                elif currentState[2][0] == 0:
-                    if topItem[1][0] == 0:
-                        neighborFound = True
-                    elif topItem[2][1] == 0:
-                        neighborFound = True
-                elif currentState[2][1] == 0:
-                    if topItem[1][1] == 0:
-                        neighborFound = True
-                    elif topItem[2][0] == 0:
-                        neighborFound = True
-                    elif topItem[2][2] == 0:
-                        neighborFound = True
-                else:
-                    if topItem[1][2] == 0:
-                        neighborFound = True
-                    elif topItem[2][1] == 0:
-                        neighborFound = True
-                        
-                "Check to see if a neighbor was found"
-                if neighborFound == True:
-                    stack.append(topItem)
-                
-            else:
-                neighborFound = True
-            
-        "Put the original current state on the stack"
-        stack.append(currentState)
-        
-        return stack
     
     def winningSequence(self, stack):
         
@@ -371,6 +373,7 @@ class Game:
             
             if closeToGoal(currentState, topItem) == 1:              
                 
+                """
                 "See if the currentState is a neighbor of the top value"
                 if currentState[0][0] == 0:
                     if topItem[0][1] == 0:
@@ -424,16 +427,19 @@ class Game:
                         neighborFound = True
                     elif topItem[2][2] == 0:
                         neighborFound = True
-                else:
+                elif currentState[2][2]:
                     if topItem[1][2] == 0:
                         neighborFound = True
                     elif topItem[2][1] == 0:
                         neighborFound = True
-                        
+                """
+                if nextTo(currentState,topItem) == True or nextTo(topItem, currentState) == True:    
+                    neighborFound = True
+                
                 "Check to see if a neighbor was found"
                 if neighborFound == True:
                     winningSequence.append(topItem)
-                    
+                
                 currentState = copy.deepcopy(topItem)
         
         return winningSequence
@@ -452,6 +458,9 @@ class Play:
         "Get initial and goal states"
         game.getInitial()
         game.getGoal()
+        
+        "Print if the puzzle is solvable or not"
+        print(isSolvable(game.initialState, game.goalState))
         
         "Set currentState to initial state"
         game.updateCurrentState(game.initialState)
@@ -495,11 +504,6 @@ class Play:
             "If state is not in the checked list, add it"
             if currentStateList not in checked: 
                 checked.append(currentStateList)
-                
-                if currentStateList != game.goalState:   
-                    "Add to the stack if necessary"
-                    "stack = game.isNeighbor(currentStateList, stack)"
-                    stack.append(currentStateList)
             
             "Make the previous state the current state"
             game.updatePreviousState(game.currentState)
@@ -516,10 +520,18 @@ class Play:
                 "Set solved to true"
                 solved = True
                 
+                "Output that the puzzle has been solved"
                 print("The puzzle has been sovled!\n")
                 
-                "Write to file the solved puzzle"
-                writeList(currentStateList, file)
+                "Fill the winningSequence stack/list"
+                winningSequence = game.winningSequence(checked)
+                
+                "Reverse stack/list to have it output correctly"
+                winningSequence.reverse()
+                
+                "Write it to the file"
+                for i in range(0, len(winningSequence)):
+                    writeList(winningSequence[i], file)
                 
                 "Close write file"
                 file.close()
@@ -534,16 +546,10 @@ class Play:
                 "Close read file"
                 readFile.close()
                 
-                "Subtract 1 from numMoves because it counted initial state as a move at the beginning"
+                "Subtract 1 from numMoves because it counted initial state as a try at the beginning"
                 numMoves -= 1
                 
-                print("It took ", str(numMoves), " moves to solve the puzzle.")
-                
-                winningSequence = game.winningSequence(checked)
-                
-                for i in range(0, len(winningSequence)):
-                    printList(winningSequence[i])
-                    print()
+                print("It took ", str(numMoves), " tries and ", str(len(winningSequence) - 1), " moves to solve the puzzle.")
                 
                 "Output how long it took"
                 end = time.time()
@@ -551,17 +557,16 @@ class Play:
                 
             else:
                 
-                "Write to file"
-                writeList(currentStateList, file)
-                
                 "Update neighborList and put the new neighbors states on the queue"
                 neighborList = game.neighborStates()
                 numNeighbors = game.howManyNeighbors()
                 
                 "If the state is not the previous state and hasn't been checked before then add to pq"
+                "The priority is assigned by the heuristic hamming distance function"
                 for i in range(0, numNeighbors):
                     if game.previousState != neighborList[i] and neighborList[i] not in checked: 
                         pq.put((getHamming(numMoves, neighborList[i], game.goalState), neighborList[i]))
+    
     
     "This will play the 8 puzzle game uninformed"
     def startGameUninformed(self):
@@ -617,11 +622,6 @@ class Play:
             "If state is not in the checked list, add it"
             if currentStateList not in checked: 
                 checked.append(currentStateList)
-                
-                if currentStateList != game.goalState:   
-                    "Add to the stack if necessary"
-                    "stack = game.isNeighbor(currentStateList, stack)"
-                    stack.append(currentStateList)
             
             "Make the previous state the current state"
             game.updatePreviousState(game.currentState)
@@ -640,8 +640,15 @@ class Play:
                 
                 print("The puzzle has been sovled!\n")
                 
-                "Write to file the solved puzzle"
-                writeList(currentStateList, file)
+                "Fill the winningSequence stack/list"
+                winningSequence = game.winningSequence(checked)
+                
+                "Reverse stack/list to have it output correctly"
+                winningSequence.reverse() 
+                
+                "Write it to the file"
+                for i in range(0, len(winningSequence)):
+                    writeList(winningSequence[i], file)
                 
                 "Close write file"
                 file.close()
@@ -656,16 +663,10 @@ class Play:
                 "Close read file"
                 readFile.close()
                 
-                "Subtract 1 from numMoves because it counted initial state as a move at the beginning"
+                "Subtract 1 from numMoves because it counted initial state as a try at the beginning"
                 numMoves -= 1
                 
-                print("It took ", str(numMoves), " moves to solve the puzzle.")
-                
-                winningSequence = game.winningSequence(checked)
-                
-                for i in range(0, len(winningSequence)):
-                    printList(winningSequence[i])
-                    print()
+                print("It took ", str(numMoves), " tries and ", str(len(winningSequence) - 1), " moves to solve the puzzle.")
                     
                 "Output how long it took"
                 end = time.time()
@@ -673,14 +674,12 @@ class Play:
                 
             else:
                 
-                "Write to file"
-                writeList(currentStateList, file)
-                
                 "Update neighborList and put the new neighbors states on the queue"
                 neighborList = game.neighborStates()
                 numNeighbors = game.howManyNeighbors()
                 
                 "If the state is not the previous state and hasn't been checked before then add to pq"
+                "The priority is arbitrarily assigned based on i"
                 for i in range(0, numNeighbors):
                     if game.previousState != neighborList[i] and neighborList[i] not in checked: 
                         pq.put((i, neighborList[i]))
