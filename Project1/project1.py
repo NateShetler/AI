@@ -38,6 +38,7 @@ def writeList(writeList, file):
 
 "This function calculates the Hamming priority for the game"
 "Pre: It accepts in the number of moves (numMoves), and the currentState and goalState"
+"Post: It will return the hamming priority"
 def getHamming(numMoves, currentState, goalState):
         
     "Used for keeping track of the Hamming priority"
@@ -145,15 +146,9 @@ def nextTo(state1, state2):
 "Post: This function returns true if it is solvable and false otherwise"
 def isSolvable(initial, goal):
     
-    "This will be used to calculate the number of inversions needed"
-    offSetNum = 0
-    
     "Used for the 1D arrays"
     initial1D = []
     goal1D = []
-    
-    "Used for the subtraction"
-    oddEven = 0
     
     "Convert the 2d lists to 1d lists"
     for i in range(0, NUM_ROWS):
@@ -161,32 +156,38 @@ def isSolvable(initial, goal):
             initial1D.append(initial[i][j])
             goal1D.append(goal[i][j])
     
-    print(initial1D)
-    print(goal1D)
-    
-    "See the offset of the numbers"
-    for i in range(0, len(goal1D)):
-        if goal1D[i] != 0:
-            oddEven = abs((i) - initial1D.index(goal1D[i]))
-            if oddEven % 2 != 0:
-                offSetNum += 1
+    "This will keep track of how many inversions there are"
     invCount = 0
     
+    "This will go through the states and figure out the inversions"
     for i in range(0, len(goal1D) - 1):
         for j in range(i + 1, len(goal1D)):
-            """
-            goal1D[i]
-            goal1D[j]
-            """
             if initial1D.index(goal1D[i]) > initial1D.index(goal1D[j]):
-                print(initial1D.index(goal1D[i]), " ", initial1D.index(goal1D[j])
                 invCount += 1
 
-    print("It is: ", invCount % 2)
     
-    "Return True if the offset number is even then it is solvable and return true"
-    "If offset number is odd then it is not solvable and return false"
-    if offSetNum % 2 == 0:
+    "This keeps track of the distance the states are from each other"
+    distance = 0
+    
+    "Used to keep track of value in initial state"
+    valueInInitial = 0
+    
+    "This will go through the initial and goal states and determine the distance they"
+    "are from each other (similar to manhattan distance)"
+    for i in range(0, NUM_ROWS):
+        for j in range(0, NUM_COLUMNS):
+            valueInInitial = initial[i][j]
+            
+            for k in range(0, NUM_ROWS):
+                for l in range(0, NUM_COLUMNS):
+                    if valueInInitial == goal[k][l] and goal[k][l] != 0:
+                        distance += abs(i - k)
+                        distance += abs(j - l)
+                 
+                
+    "Return true if both the distance and inversion counts are odd or both even"
+    "Return false if they are mix matched"
+    if (distance % 2 == 0 and invCount % 2 == 0) or (distance % 2 != 0 and invCount % 2 != 0):
         return True
     else:
         return False
@@ -204,6 +205,9 @@ class Game:
     
     "This function gets a valid initial state from the user"
     def getInitial(self):
+        
+        "Make sure the initial state is clear"
+        self.initialState.clear()
         
         "This variable will be used to make sure the input is valid"
         validInitial = False 
@@ -249,6 +253,9 @@ class Game:
         
     "This function gets a valid goal state from the user"
     def getGoal(self):
+        
+        "Make sure the goal state is clear"
+        self.goalState.clear()
         
         "This variable will be used to make sure the input is valid"
         validGoal = False 
@@ -405,12 +412,21 @@ class Play:
         "This will be the file used to store the sequence"
         file = open("8puzzlelog.txt", "w")
         
-        "Get initial and goal states"
-        game.getInitial()
-        game.getGoal()
+        "This will be for making sure the puzzle is solvable"
+        solvable = False
         
-        "Print if the puzzle is solvable or not"
-        print(isSolvable(game.initialState, game.goalState))
+        "Loop until a valid puzzle is given"
+        while solvable == False:
+            
+            "Get initial and goal states"
+            game.getInitial()
+            game.getGoal()
+            
+            solvable = isSolvable(game.initialState, game.goalState)
+            
+            if solvable == False:
+                print("\nThe puzzle that you entered is not solvable! Please enter another puzzle.")
+                
         
         "Set currentState to initial state"
         game.updateCurrentState(game.initialState)
@@ -486,6 +502,8 @@ class Play:
                 "Close write file"
                 file.close()
                 
+                """" 
+                This was for if the user would like the sequence outputted
                 "Open readfile"
                 readFile = open("8puzzlelog.txt", "r")
                 
@@ -495,11 +513,12 @@ class Play:
                 
                 "Close read file"
                 readFile.close()
+                """
                 
                 "Subtract 1 from numMoves because it counted initial state as a try at the beginning"
                 numMoves -= 1
                 
-                print("It took ", str(numMoves), " checks and ", str(len(winningSequence) - 1), " moves to solve the puzzle.")
+                print("It took ", str(numMoves), " state checks and ", str(len(winningSequence) - 1), " moves/steps to solve the puzzle.")
                 
                 "Output how long it took"
                 end = time.time()
@@ -531,9 +550,20 @@ class Play:
         "This will be the file used to store the sequence"
         file = open("8puzzlelog.txt", "w")
         
-        "Get initial and goal states"
-        game.getInitial()
-        game.getGoal()
+        "This will be for making sure the puzzle is solvable"
+        solvable = False
+        
+        "This will loop until a valid puzzle is given"
+        while solvable == False:
+            
+            "Get initial and goal states"
+            game.getInitial()
+            game.getGoal()
+            
+            solvable = isSolvable(game.initialState, game.goalState)
+            
+            if solvable == False:
+                print("\nThe puzzle that you entered is not solvable! Please enter another puzzle.")
         
         "Set currentState to initial state"
         game.updateCurrentState(game.initialState)
@@ -608,6 +638,8 @@ class Play:
                 "Close write file"
                 file.close()
                 
+                """
+                This is for if the user would like the sequence outputted
                 "Open readfile"
                 readFile = open("8puzzlelog.txt", "r")
                 
@@ -617,11 +649,12 @@ class Play:
                 
                 "Close read file"
                 readFile.close()
+                """
                 
                 "Subtract 1 from numMoves because it counted initial state as a try at the beginning"
                 numMoves -= 1
                 
-                print("It took ", str(numMoves), " checks and ", str(len(winningSequence) - 1), " moves to solve the puzzle.")
+                print("It took ", str(numMoves), " state checks and ", str(len(winningSequence) - 1), " moves/steps to solve the puzzle.")
                     
                 "Output how long it took"
                 end = time.time()
@@ -641,7 +674,7 @@ class Play:
                 "The priority is arbitrarily assigned based on i"
                 for i in range(0, numNeighbors):
                     if game.previousState != neighborList[i] and neighborList[i] not in checked: 
-                        pq.put((i, neighborList[i]))
+                        pq.put((i + numMoves, neighborList[i]))
         
         return timeElapsed            
                     
@@ -654,9 +687,10 @@ def n_puzzle():
     gameInformed = Play()
     gameUninformed = Play()
     
-    print("This first puzzle will be solved informed using the hamming priority.\n")
+    print("\nThis first puzzle will be solved informed using the hamming priority.\n")
     timeInformed = gameInformed.startGame()
-    print("This second puzzle will be solved uninformed\n")
+    print("-----------------------------------")
+    print("\nThis second puzzle will be solved uninformed.\n")
     timeUninformed = gameUninformed.startGameUninformed()
     
     print("\nThe time it took to solve the puzzle informed was ", round(timeInformed, 2))
