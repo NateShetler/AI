@@ -170,17 +170,19 @@ def isSolvable(initial, goal):
             oddEven = abs((i) - initial1D.index(goal1D[i]))
             if oddEven % 2 != 0:
                 offSetNum += 1
-    
-    """
     invCount = 0
     
     for i in range(0, len(goal1D) - 1):
         for j in range(i + 1, len(goal1D)):
-            if goal1D[i] > goal1D[j]:
+            """
+            goal1D[i]
+            goal1D[j]
+            """
+            if initial1D.index(goal1D[i]) > initial1D.index(goal1D[j]):
+                print(initial1D.index(goal1D[i]), " ", initial1D.index(goal1D[j])
                 invCount += 1
 
-    print(invCount % 2)
-    """
+    print("It is: ", invCount % 2)
     
     "Return True if the offset number is even then it is solvable and return true"
     "If offset number is odd then it is not solvable and return false"
@@ -501,6 +503,10 @@ class Play:
                 
                 "Output how long it took"
                 end = time.time()
+                
+                "Set the time variable"
+                timeElapsed = end - start
+                
                 print("\nIt took ", str(round(end - start, 2)), " to solve the puzzle informed.")
                 
             else:
@@ -514,7 +520,8 @@ class Play:
                 for i in range(0, numNeighbors):
                     if game.previousState != neighborList[i] and neighborList[i] not in checked: 
                         pq.put((getHamming(numMoves, neighborList[i], game.goalState), neighborList[i]))
-    
+        
+        return timeElapsed
     
     "This will play the 8 puzzle game uninformed"
     def startGameUninformed(self):
@@ -618,6 +625,10 @@ class Play:
                     
                 "Output how long it took"
                 end = time.time()
+                
+                "Set the time variable"
+                timeElapsed = end - start
+                
                 print("\nIt took ", str(round(end - start, 2)), " to solve the puzzle uninformed.")
                 
             else:
@@ -631,12 +642,26 @@ class Play:
                 for i in range(0, numNeighbors):
                     if game.previousState != neighborList[i] and neighborList[i] not in checked: 
                         pq.put((i, neighborList[i]))
-                        
+        
+        return timeElapsed            
                     
 def n_puzzle():
     
-    game = Play()
-    game.startGame()
+    "These will keep track of the time"
+    timeInformed = 0
+    timeUninformed = 0
+    
+    gameInformed = Play()
+    gameUninformed = Play()
+    
+    print("This first puzzle will be solved informed using the hamming priority.\n")
+    timeInformed = gameInformed.startGame()
+    print("This second puzzle will be solved uninformed\n")
+    timeUninformed = gameUninformed.startGameUninformed()
+    
+    print("\nThe time it took to solve the puzzle informed was ", round(timeInformed, 2))
+    print("VS.")
+    print("The time it took to solve the puzzle uninformed was ", round(timeUninformed, 2))
     
         
     
