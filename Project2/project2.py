@@ -11,13 +11,20 @@ def py_nb():
     "Boolean for the menu loop"
     endMenu = False
     
+    "This will store the learned model"
+    learnedModel = [] 
+
+    "This stores the filename that the user enters"
+    fileName = ""
+
     while endMenu == False:
         
         "Print the menu out"
+        print()
         print("1. Learn a Naïve Bayesian classifier from categorical data.")
         print("2. Save a model.")
         print("3. Load a model and test its accuracy.")
-        print("4. Apply a naïve Bayesian classifier to new cases interactively. The submeny for this item includes:")
+        print("4. Apply a naïve Bayesian classifier to new cases interactively. The submenu for this item includes:")
         print("\t4.1 Enter a new case interactively.")
         print("\t4.2 Quit.")
         print("5. Quit.")
@@ -34,6 +41,19 @@ def py_nb():
             
             "Get the csv data"
             csvData = getCSV(fileName)
+
+        elif menuChoice == "2":
+
+            file = open(str(fileName.split(".")[0]) + ".bin", "a")
+            "-----------------------------------------------------------"
+            file.write("File data")
+            file.close()
+        
+        elif menuChoice == "3":
+            "Do something"
+            
+        elif menuChoice == "4":
+            "Do something"
             
 
 "Pre: This function will accept in the name of a csv file"
