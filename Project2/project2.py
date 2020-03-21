@@ -5,7 +5,9 @@ Created on Fri Mar 13 09:59:46 2020
 @author: adm_nds39
 """
 import pandas as pd
+import copy
 
+"This is the main function for the program"
 def py_nb():
     
     "Boolean for the menu loop"
@@ -37,20 +39,70 @@ def py_nb():
         if menuChoice == "5":
             endMenu = True
         elif menuChoice == "1":
-            fileName = input("Please enter the name of the csv file you would like to enter: ")
+            fileName = input("Please enter the name of a csv file consisting of headers and training examples (will search user folder for file): ")
             
             "Get the csv data"
             csvData = getCSV(fileName)
+            
+            "Print the data from the file"
+            print(csvData)
+            
+            input("Press any key to find the Bayesian Classifier (Model)...")
+            print()
+            
+            "Get the model and print it"
+            model = bayes_model(csvData)
+            
+            "Set learnedModel to what model is"
+            learnedModel = copy.deepcopy(model)
+            
+            print("The Bayesian Model for the file that you entered is: ")
+            print()
+            
+            "Print the model out"
+            for i in range(0, len(model)):
+                if i == 0:
+                    print("Number of yes/no answers:")
+                    print()
+                    print(model[i])
+                    print()
+                    print("---------------------------------------------")
+                    print()
+                elif i == 1:
+                    for j in range(0, len(model[1])):
+                        print(model[2][j], ":")
+                        for k in model[i][j]:
+                            print(k, model[i][j][k])
+                        print()
+                    print("---------------------------------------------")
+                    print()
+                elif i == 2:
+                    print("Names of dependent features:")
+                    print()
+                    print(model[i])
+                    print("---------------------------------------------")
+                    print()
+                else:
+                    print("Prediction based on the data:")
+                    print()
+                    print(model[i])
+                    print()
+                    
 
         elif menuChoice == "2":
-
+            
+            "Open correct file"
             file = open(str(fileName.split(".")[0]) + ".bin", "a")
-            "-----------------------------------------------------------"
-            file.write("File data")
+            
+            "Write to file and close it"
+            file.write(str(learnedModel))
             file.close()
+            
+            input("The model has been saved. Please hit any key to continue...")
         
         elif menuChoice == "3":
-            "Do something"
+            nameModelFile = input("Please enter the name of the model file that is saved (Ex: weather.bin):")
+            
             
         elif menuChoice == "4":
             "Do something"
@@ -64,10 +116,49 @@ def getCSV(file):
     "Create the dataFrame from the csv file"
     csvDataFrame = pd.read_csv(file)
     
-    "Print out the contents of the csv file"
-    print(csvDataFrame)
-        
-    "For formatting purposes"
-    print()
-    
     return csvDataFrame
+
+"The following functions in this block of code were given to us by Dr. Chan "
+"-----------------------------------------------------------------"
+#represent frequency count of one feature as a DataFrame
+def freq(x, opt='DataFrame'):
+    """ x is a Series
+        it returns a DataFrame (by default) indexed by unique values of x and
+        their frequency counts
+    """
+    if opt != 'DataFrame':
+        if opt == 'dict':
+            return { i: x.value_counts()[i] for i in x.unique()}
+        else:
+            return (x.name, { i: x.value_counts()[i] for i in x.unique()})
+    return pd.DataFrame([x.value_counts()[i] for i in x.unique()], index=x.unique(), columns=[x.name])
+
+#How to create multi-index objects?
+#Use  groupby()
+def cond_p(df, c, d):
+    """ compute p(d|c)
+        represented as a dict
+        df is a DataFrame with columns c and d
+        c and d are column names
+    """
+    C = df.groupby(c).groups
+    D = df.groupby(d).groups
+    P_DC = { (i, j): (C[i] & D[j]).size / C[i].size
+                 for i in C.keys() for j in D.keys()}
+    
+    return P_DC  #returns P(d|c) as a dict
+
+def inverse_p(df, cond_list, decision_list):
+    """ Build a list of dict of inverse probabilities
+    """
+    p_list = [cond_p(df, decision_list, i) for i in cond_list] #build a list of dicts
+    return p_list
+
+def bayes_model(df):
+    cond_list = df.columns[:-1]  #get the list of condition attributes
+    decision_list = df.columns[-1]  #get the decision attribute, assumed to be the last one
+    d_prior = freq(df[decision_list], 'dict')
+    c_list = inverse_p(df, cond_list, decision_list)
+    return (d_prior, c_list, cond_list, decision_list)
+
+"---------------------------------------------------------"
