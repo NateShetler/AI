@@ -69,6 +69,7 @@ def py_nb():
                     print("---------------------------------------------")
                     print()
                 elif i == 1:
+                    print("Dependent features probabilities: ")
                     for j in range(0, len(model[1])):
                         print(model[2][j], ":")
                         for k in model[i][j]:
@@ -83,7 +84,7 @@ def py_nb():
                     print("---------------------------------------------")
                     print()
                 else:
-                    print("Prediction based on the data:")
+                    print("Last column name: ")
                     print()
                     print(model[i])
                     print()
@@ -101,7 +102,21 @@ def py_nb():
             input("The model has been saved. Please hit any key to continue...")
         
         elif menuChoice == "3":
-            nameModelFile = input("Please enter the name of the model file that is saved (Ex: weather.bin):")
+            nameModelFile = input("Please enter the name of the model file that is saved (Ex: weather.bin): ")
+            
+            "Open file and convert it to a list"
+            savedFile = open(nameModelFile, "r")
+            listOfFile = []
+            listOfFile = savedFile.read()
+            
+            
+            "Print the saved model"
+            print("The content of the saved file is: ")
+            print()
+            print(listOfFile)
+            
+            savedFile.close()
+            
             
             
         elif menuChoice == "4":
@@ -118,6 +133,79 @@ def getCSV(file):
     
     return csvDataFrame
 
+def testData():
+    "-----------------------------------------------------------"
+    
+    fileName = input("Please enter the name of a csv file consisting of headers and training examples (will search user folder for file): ")
+            
+    "Get the csv data"
+    csvData = getCSV(fileName)
+            
+    "Print the data from the file"
+    print(csvData)
+            
+    input("Press any key to find the Bayesian Classifier (Model)...")
+    print()
+            
+    "Get the model and print it"
+    model = bayes_model(csvData)
+    
+    "--------------------------------------------------------------"
+    
+    "Get test file"
+    nameTestFile = input("Please enter the name of a testing file in csv format with no headers (Ex: weather.csv): ")
+           
+    dfTest = pd.read_csv(nameTestFile, header=None)
+    
+    print(dfTest)
+    
+    predictionList = []
+    actualList = []
+    
+    itemFeatures = []
+    probabilityYes = 1
+    probabilityNo = 1
+    
+    for i in range(0, len(dfTest)):
+        "Reset the probability variables"
+        probabilityYes = 1
+        probabilityNo = 1
+        
+        for j in range(0, len(dfTest.columns)):
+            
+            if j == 4:
+                
+                "Append actualList with actual answer"
+                actualList.append(dfTest.iloc[i][j])
+            else:
+                
+                itemFeatures.append(dfTest.iloc[i][j])
+            
+                "Times the probability for the item"
+                probabilityYes *= model[1][j][('yes', dfTest.iloc[i][j])]
+                probabilityNo *= model[1][j][('no', dfTest.iloc[i][j])]
+            
+        "Finish probabilities and then find guess"
+        probabilityYes = probabilityYes * (model[0]['yes'] / (model[0]['no'] + model[0]['yes']))
+        probabilityNo = probabilityNo * (model[0]['no'] / (model[0]['no'] + model[0]['yes']))
+        
+        probabilityYes = probabilityYes / (probabilityYes + probabilityNo)
+        probabilityNo = probabilityNo / (probabilityNo + probabilityYes)
+        
+        "Append list with guess"
+        if probabilityYes > probabilityNo:
+            predictionList.append('yes')
+        else:
+            predictionList.append('no')
+            
+
+    
+    "Print out the lists"
+    print()
+    print(predictionList)
+    print(actualList)
+     
+     
 "The following functions in this block of code were given to us by Dr. Chan "
 "-----------------------------------------------------------------"
 #represent frequency count of one feature as a DataFrame
