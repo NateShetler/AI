@@ -150,10 +150,11 @@ def testData():
     "Get the model and print it"
     model = bayes_model(csvData)
     
+    print(model)
     "--------------------------------------------------------------"
     
     "Get test file"
-    nameTestFile = input("Please enter the name of a testing file in csv format with no headers (Ex: weather.csv): ")
+    nameTestFile = input("Please enter the name of a testing file in csv format with no headers (Ex: weatherNoHeaders.csv): ")
            
     dfTest = pd.read_csv(nameTestFile, header=None)
     
@@ -173,7 +174,7 @@ def testData():
         
         for j in range(0, len(dfTest.columns)):
             
-            if j == 4:
+            if j == len(dfTest.columns) - 1:
                 
                 "Append actualList with actual answer"
                 actualList.append(dfTest.iloc[i][j])
@@ -184,13 +185,17 @@ def testData():
                 "Times the probability for the item"
                 probabilityYes *= model[1][j][('yes', dfTest.iloc[i][j])]
                 probabilityNo *= model[1][j][('no', dfTest.iloc[i][j])]
-            
+                
+                
         "Finish probabilities and then find guess"
         probabilityYes = probabilityYes * (model[0]['yes'] / (model[0]['no'] + model[0]['yes']))
         probabilityNo = probabilityNo * (model[0]['no'] / (model[0]['no'] + model[0]['yes']))
         
-        probabilityYes = probabilityYes / (probabilityYes + probabilityNo)
-        probabilityNo = probabilityNo / (probabilityNo + probabilityYes)
+        "Sum of the two probabilities"
+        sumOfTwo = probabilityYes + probabilityNo
+        
+        probabilityYes = probabilityYes / (sumOfTwo)
+        probabilityNo = probabilityNo / (sumOfTwo)
         
         "Append list with guess"
         if probabilityYes > probabilityNo:
@@ -204,6 +209,19 @@ def testData():
     print()
     print(predictionList)
     print(actualList)
+    
+    "Used to keep count of differences"
+    count = 0
+    
+    "Figure out accuracy"
+    for i in range(0, len(predictionList)):
+        if predictionList[i] != actualList[i]:
+            count += 1
+            
+    "Do accuracy calculation"
+    accuracy = (len(predictionList) - count) / len(predictionList)
+    
+    print("The accuracy is: ", round(accuracy, 2) * 100, "%")
      
      
 "The following functions in this block of code were given to us by Dr. Chan "
