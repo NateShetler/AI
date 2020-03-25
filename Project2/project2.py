@@ -281,6 +281,11 @@ def interactiveTest():
                     "Get file data from the bayesian list"
                     model = bayList[str(bayesianFile)]
                     
+                    print()
+                    print("The bayesion model from this file was: ")
+                    print(model)
+                    print()
+                    
                     "Create shape of main test dataframe"
                     for i in range(0, len(model[2])):
                         testDataFrame[model[2][i]] = pd.Series()
@@ -292,36 +297,87 @@ def interactiveTest():
                 "Create shape of individual dataframe"
                 for i in range(0, len(model[2])):
                         singleFrame[model[2][i]] = pd.Series()
-                        
-                "List for items"
-                listFrame = []
                 
+                "Dictionary for keeping track of items"
                 dictionary = {}
                 
+                "This will get all of the items (columns) necessarry to create a single row"
                 for i in range(0, len(model[2])):
                     item = input("Please enter a(n) " + str(model[2][i]) + ": ")
                     
                     "Add item to dictionary"
                     dictionary[model[2][i]] = item
                 
-                "Make dictionary into a dataframe"
+                "Create the single frame from the dictionary"
                 singleFrame = singleFrame.append(dictionary, ignore_index=True)
                 
-                "Put the single frame onto the main dataframe"
-                testDataFrame = testDataFrame.append(singleFrame, ignore_index = True)
+                try:
+                    
+                    "These will be used to get the probabilities"
+                    probabilityYes = 1
+                    probabilityNo = 1
                 
-                "Print the dataframe created by user"
-                print()
-                print("The test data that you've entered so far: ")
-                print(testDataFrame)
+                    "This block will do the calculations for applying the model"
+                    for j in range(0, len(singleFrame.columns)):
+                        
+                        "These are because python interperets TRUE and FALSE as booleans"
+                        if singleFrame.iloc[0][j] == "FALSE" or singleFrame.iloc[0][j] == "False":
+                            probabilityYes *= model[1][j][('yes', False)]
+                        elif singleFrame.iloc[0][j] == "TRUE" or singleFrame.iloc[0][j] == "True":
+                            probabilityNo *= model[1][j][('no', True)]
+                        else:
+                            "Times the probability for the item"
+                            probabilityYes *= model[1][j][('yes', singleFrame.iloc[0][j])]
+                            probabilityNo *= model[1][j][('no', singleFrame.iloc[0][j])]
                 
-                "Add one to count"
-                count += 1
                 
+                    "Finish probabilities and then find guess"
+                    probabilityYes = probabilityYes * (model[0]['yes'] / (model[0]['no'] + model[0]['yes']))
+                    probabilityNo = probabilityNo * (model[0]['no'] / (model[0]['no'] + model[0]['yes']))
+                    
+                    "Sum of the two probabilities"
+                    sumOfTwo = probabilityYes + probabilityNo
+        
+                    probabilityYes = probabilityYes / (sumOfTwo)
+                    probabilityNo = probabilityNo / (sumOfTwo)
+        
+                    "Make the prediction"
+                    if probabilityYes > probabilityNo:
+                        print()
+                        print("The bayesian classifier predicts: Yes")
+                    else:
+                        print()
+                        print("The bayesian classifier predicts: No")
+                    
+                    "Put the single frame onto the main dataframe"
+                    testDataFrame = testDataFrame.append(singleFrame, ignore_index = True)
+                    
+                    "Print the dataframe created by user"
+                    print()
+                    print("The test cases that you've entered so far: ")
+                    print(testDataFrame)
+                    
+                    "Add one to count"
+                    count += 1
+                except LookupError:
+                    print()
+                    
+                    "Print out the columns of the bayesian model"
+                    for i in range(0, len(model)):
+                        if i == 1:
+                            for j in range(0, len(model[1])):
+                                print(model[2][j], ":")
+                                for k in model[i][j]:
+                                    print(k, model[i][j][k])
+                                print()
+                    print()
+                    print("The item that you entered wasn't formated correctly. Please refer to the portion of the bayesian model above and try again.")
+                    print()
             else:
                 keepGoing = False
         
     except LookupError:
+        print()
         print("No classifier was found for the file that you entered.")
         
         
