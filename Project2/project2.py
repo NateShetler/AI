@@ -6,6 +6,10 @@ Created on Fri Mar 13 09:59:46 2020
 """
 import pandas as pd
 import copy
+from sklearn.metrics import confusion_matrix
+
+"Dictionary that will store all of the bayesian models based on name"
+bayList = {}
 
 "This is the main function for the program"
 def py_nb():
@@ -56,6 +60,9 @@ def py_nb():
             "Set learnedModel to what model is"
             learnedModel = copy.deepcopy(model)
             
+            "Put the item in the dictionary"
+            bayList.update({fileName : learnedModel})
+            
             print("The Bayesian Model for the file that you entered is: ")
             print()
             
@@ -102,22 +109,9 @@ def py_nb():
             input("The model has been saved. Please hit any key to continue...")
         
         elif menuChoice == "3":
-            nameModelFile = input("Please enter the name of the model file that is saved (Ex: weather.bin): ")
             
-            "Open file and convert it to a list"
-            savedFile = open(nameModelFile, "r")
-            listOfFile = []
-            listOfFile = savedFile.read()
-            
-            
-            "Print the saved model"
-            print("The content of the saved file is: ")
-            print()
-            print(listOfFile)
-            
-            savedFile.close()
-            
-            
+            "Call testData function"
+            testData()
             
         elif menuChoice == "4":
             "Do something"
@@ -133,31 +127,54 @@ def getCSV(file):
     
     return csvDataFrame
 
+"Pre: This function accepts no parameters"
+"Post: This function will test the accuracy of a given Bayesian Classifier (Model)"
 def testData():
-    "-----------------------------------------------------------"
-    
-    fileName = input("Please enter the name of a csv file consisting of headers and training examples (will search user folder for file): ")
+   
+    "Loop until valid filename is given"
+    while True:
+        try:
             
-    "Get the csv data"
-    csvData = getCSV(fileName)
+            nameModelFile = input("Please enter the name of the model file that is saved (Ex: weather.bin): ")
             
-    "Print the data from the file"
-    print(csvData)
+            "Open file"
+            savedFile = open(nameModelFile, "r")
             
-    input("Press any key to find the Bayesian Classifier (Model)...")
+            break
+        
+        except IOError:
+            print("Invalid filename, please try again.")
+            
+    "Convert to a list"
+    listOfFile = []
+    listOfFile = savedFile.read()
+                 
+    "Print the saved model"
+    print("The content of the saved file is: ")
     print()
+    print(listOfFile)
             
-    "Get the model and print it"
-    model = bayes_model(csvData)
+    savedFile.close()
     
-    print(model)
-    "--------------------------------------------------------------"
+    "Get name of the csv file corresponding to the filename entered"
+    nameCSVFile = str(nameModelFile.split(".")[0]) + ".csv"
     
-    "Get test file"
-    nameTestFile = input("Please enter the name of a testing file in csv format with no headers (Ex: weatherNoHeaders.csv): ")
+    "Get file data from the bayesian list"
+    model = bayList[nameCSVFile]
+    
+    "Loop until valid filename is given"
+    while True:
+        try:
+            
+            "Get test file"
+            nameTestFile = input("Please enter the name of a testing file in csv format with no headers (Ex: weatherNoHeaders.csv): ")
            
-    dfTest = pd.read_csv(nameTestFile, header=None)
-    
+            dfTest = pd.read_csv(nameTestFile, header=None)
+            
+            break
+        except IOError:
+            print("Invalid filename, please try again.")
+            
     print(dfTest)
     
     predictionList = []
@@ -203,12 +220,14 @@ def testData():
         else:
             predictionList.append('no')
             
-
     
-    "Print out the lists"
+    "Get the confusion matrix"
+    confMatrix = confusion_matrix(actualList, predictionList)
+    
     print()
-    print(predictionList)
-    print(actualList)
+    print("The confusion for the data is: ")
+    print(confMatrix)
+    print()
     
     "Used to keep count of differences"
     count = 0
