@@ -43,11 +43,20 @@ def py_nb():
         if menuChoice == "5":
             endMenu = True
         elif menuChoice == "1":
-            fileName = input("Please enter the name of a csv file consisting of headers and training examples (will search user folder for file): ")
             
-            "Get the csv data"
-            csvData = getCSV(fileName)
+            "Loop until valid filename"
+            while True:
+                
+                try:
+                    
+                    fileName = input("Please enter the name of a csv file consisting of headers and training examples (will search user folder for file): ")
             
+                    "Get the csv data"
+                    csvData = getCSV(fileName)
+                    break
+                except IOError:
+                    print("Invalid filename. Please try again.")
+                    
             "Print the data from the file"
             print(csvData)
             
@@ -69,14 +78,11 @@ def py_nb():
             "Print the model out"
             for i in range(0, len(model)):
                 if i == 0:
-                    print("Number of yes/no answers:")
-                    print()
                     print(model[i])
                     print()
                     print("---------------------------------------------")
                     print()
                 elif i == 1:
-                    print("Dependent features probabilities: ")
                     for j in range(0, len(model[1])):
                         print(model[2][j], ":")
                         for k in model[i][j]:
@@ -85,14 +91,11 @@ def py_nb():
                     print("---------------------------------------------")
                     print()
                 elif i == 2:
-                    print("Names of dependent features:")
-                    print()
                     print(model[i])
+                    print()
                     print("---------------------------------------------")
                     print()
                 else:
-                    print("Last column name: ")
-                    print()
                     print(model[i])
                     print()
                     
@@ -100,7 +103,7 @@ def py_nb():
         elif menuChoice == "2":
             
             "Open correct file"
-            file = open(str(fileName.split(".")[0]) + ".bin", "a")
+            file = open(str(fileName.split(".")[0]) + ".bin", "w")
             
             "Write to file and close it"
             file.write(str(learnedModel))
@@ -114,7 +117,15 @@ def py_nb():
             testData()
             
         elif menuChoice == "4":
-            "Do something"
+            
+            "Call interactiveTest function"
+            interactiveTest()
+            
+        elif menuChoice == "4.1" or menuChoice == "4.2":
+            
+            "Give user a notice to enter 4 before entering 4.1 or 4.2"
+            print("Please enter '4' before entering it's submenu items.")
+            print()
             
 
 "Pre: This function will accept in the name of a csv file"
@@ -135,6 +146,7 @@ def testData():
     while True:
         try:
             
+            print()
             nameModelFile = input("Please enter the name of the model file that is saved (Ex: weather.bin): ")
             
             "Open file"
@@ -174,13 +186,15 @@ def testData():
             break
         except IOError:
             print("Invalid filename, please try again.")
-            
+    
+    print()
+    print("Contents of the test file: ")
     print(dfTest)
     
+    "Lists for predictions and actual decisions"
     predictionList = []
     actualList = []
     
-    itemFeatures = []
     probabilityYes = 1
     probabilityNo = 1
     
@@ -196,8 +210,6 @@ def testData():
                 "Append actualList with actual answer"
                 actualList.append(dfTest.iloc[i][j])
             else:
-                
-                itemFeatures.append(dfTest.iloc[i][j])
             
                 "Times the probability for the item"
                 probabilityYes *= model[1][j][('yes', dfTest.iloc[i][j])]
@@ -225,7 +237,7 @@ def testData():
     confMatrix = confusion_matrix(actualList, predictionList)
     
     print()
-    print("The confusion for the data is: ")
+    print("The confusion matrix for the data is: ")
     print(confMatrix)
     print()
     
@@ -241,8 +253,78 @@ def testData():
     accuracy = (len(predictionList) - count) / len(predictionList)
     
     print("The accuracy is: ", round(accuracy, 2) * 100, "%")
-     
-     
+
+
+def interactiveTest():
+    
+    
+    try:
+        
+        
+        count = 0
+        keepGoing = True
+        bayesianFile = ""
+        model = []
+        
+        "Test data frame created from user input"
+        testDataFrame = pd.DataFrame({})
+        
+        while keepGoing == True:
+            userResponse = input("4.1 Enter a new case interactively.\n4.2 Quit.\n\n")
+            
+            if userResponse == "4.1":
+                
+                if count == 0:
+                
+                    bayesianFile = input("Please enter the name of the file that the bayesian classifier was generated from (Ex. weather.csv): ")
+            
+                    "Get file data from the bayesian list"
+                    model = bayList[str(bayesianFile)]
+                    
+                    "Create shape of main test dataframe"
+                    for i in range(0, len(model[2])):
+                        testDataFrame[model[2][i]] = pd.Series()
+                        
+            
+                "Single data frame"
+                singleFrame = pd.DataFrame({})
+                
+                "Create shape of individual dataframe"
+                for i in range(0, len(model[2])):
+                        singleFrame[model[2][i]] = pd.Series()
+                        
+                "List for items"
+                listFrame = []
+                
+                dictionary = {}
+                
+                for i in range(0, len(model[2])):
+                    item = input("Please enter a(n) " + str(model[2][i]) + ": ")
+                    
+                    "Add item to dictionary"
+                    dictionary[model[2][i]] = item
+                
+                "Make dictionary into a dataframe"
+                singleFrame = singleFrame.append(dictionary, ignore_index=True)
+                
+                "Put the single frame onto the main dataframe"
+                testDataFrame = testDataFrame.append(singleFrame, ignore_index = True)
+                
+                "Print the dataframe created by user"
+                print()
+                print("The test data that you've entered so far: ")
+                print(testDataFrame)
+                
+                "Add one to count"
+                count += 1
+                
+            else:
+                keepGoing = False
+        
+    except LookupError:
+        print("No classifier was found for the file that you entered.")
+        
+        
 "The following functions in this block of code were given to us by Dr. Chan "
 "-----------------------------------------------------------------"
 #represent frequency count of one feature as a DataFrame
@@ -285,5 +367,3 @@ def bayes_model(df):
     d_prior = freq(df[decision_list], 'dict')
     c_list = inverse_p(df, cond_list, decision_list)
     return (d_prior, c_list, cond_list, decision_list)
-
-"---------------------------------------------------------"
