@@ -109,7 +109,7 @@ def py_nb():
             file.write(str(learnedModel))
             file.close()
             
-            input("The model has been saved. Please hit any key to continue...")
+            input("The model has been saved (By default it is saved to the 'users' folder). Please hit any key to continue...")
         
         elif menuChoice == "3":
             
@@ -257,10 +257,7 @@ def testData():
 
 def interactiveTest():
     
-    
     try:
-        
-        
         count = 0
         keepGoing = True
         bayesianFile = ""
