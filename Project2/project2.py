@@ -52,7 +52,7 @@ def py_nb():
                 
                 try:
                     
-                    fileName = input("Please enter the name of a csv file consisting of headers and training examples (will search user folder for file) or 'Q'to quit: ")
+                    fileName = input("Please enter the name of a csv file (Ex: weather.csv) consisting of headers and training examples (will search user folder by default) or 'Q' to quit: ")
                     
                     if fileName == 'Q':
                         quitLoop = True
@@ -100,8 +100,8 @@ def py_nb():
                             for k in model[i][j]:
                                 print(k, model[i][j][k])
                             print()
-                            print("---------------------------------------------")
-                            print()
+                        print("---------------------------------------------")
+                        print()
                     elif i == 2:
                         print(model[i])
                         print()
@@ -205,16 +205,22 @@ def testData():
     for i in range(0, len(model[0])):
         nameTargets.append(list(model[0].keys())[i])
     
+    "For quitting the loop"
+    quitTestLoop = False
+    
     "Loop until valid filename is given"
-    while True:
+    while True and quitTestLoop == False:
         try:
             
             "Get test file"
-            nameTestFile = input("Please enter the name of a testing file in csv format with no headers (Ex: weatherNoHeaders.csv): ")
+            nameTestFile = input("Please enter the name of a testing file in csv format with no headers (Ex: weatherNoHeaders.csv) or 'Q' to quit: ")
            
-            dfTest = pd.read_csv(nameTestFile, header=None)
-            
-            break
+            if nameTestFile == 'Q':
+                return
+            else:
+                
+                dfTest = pd.read_csv(nameTestFile, header=None)
+                break
         except IOError:
             print("Invalid filename, please try again.")
     
@@ -329,6 +335,19 @@ def interactiveTest():
                     "Get file data from the bayesian list"
                     model = bayList[str(bayesianFile)]
                     
+                    "Create two lists holding the target names and probabilities"
+                    nameTargets = []
+                    targetProbabilities = []
+                    
+                    "Fill nameTargets"
+                    for i in range(0, len(model[0])):
+                        nameTargets.append(list(model[0].keys())[i])
+                        
+                    "Fill targetProbabilities with 1 originally"
+                    for p in range(0, len(nameTargets)):
+                        targetProbabilities.append(1)
+                    
+                        
                     print()
                     print("The bayesion model from this file was: ")
                     print(model)
@@ -351,7 +370,19 @@ def interactiveTest():
                 
                 "This will get all of the items (columns) necessarry to create a single row"
                 for i in range(0, len(model[2])):
-                    item = input("Please enter a(n) " + str(model[2][i]) + ": ")
+                    
+                    "Get keys from list for outputting options"
+                    keys = list(model[1][i].keys())
+                    
+                    print()
+                    print("Please enter a(n) " + str(model[2][i]) + " (Your options are:", end = ' ')
+                    for j in range(0, (len(keys) // len(model[0]))):
+                        if j != (len(keys) // len(model[0])) - 1:    
+                            print(str(keys[j][1]) + ", ", end = '')
+                        else:
+                            print(keys[j][1], end = ' ')
+                    print(")", end = '')
+                    item = input()
                     
                     "Add item to dictionary"
                     dictionary[model[2][i]] = item
@@ -361,41 +392,64 @@ def interactiveTest():
                 
                 try:
                     
-                    "These will be used to get the probabilities"
-                    probabilityYes = 1
-                    probabilityNo = 1
-                
+                    "Reset the probabilities"
+                    for p in range(0, len(targetProbabilities)):
+                        targetProbabilities[p] = 1
+                        
                     "This block will do the calculations for applying the model"
                     for j in range(0, len(singleFrame.columns)):
                         
                         "These are because python interperets TRUE and FALSE as booleans"
                         if singleFrame.iloc[0][j] == "FALSE" or singleFrame.iloc[0][j] == "False":
-                            probabilityYes *= model[1][j][('yes', False)]
+                            
+                            for k in range(0, len(targetProbabilities)):
+                                targetProbabilities[k] *= model[1][j][(nameTargets[k], False)]
+                                
                         elif singleFrame.iloc[0][j] == "TRUE" or singleFrame.iloc[0][j] == "True":
-                            probabilityNo *= model[1][j][('no', True)]
+                            
+                            for k in range(0, len(targetProbabilities)):
+                                targetProbabilities[k] *= model[1][j][(nameTargets[k], True)]
                         else:
-                            "Times the probability for the item"
-                            probabilityYes *= model[1][j][('yes', singleFrame.iloc[0][j])]
-                            probabilityNo *= model[1][j][('no', singleFrame.iloc[0][j])]
-                
-                
-                    "Finish probabilities and then find guess"
-                    probabilityYes = probabilityYes * (model[0]['yes'] / (model[0]['no'] + model[0]['yes']))
-                    probabilityNo = probabilityNo * (model[0]['no'] / (model[0]['no'] + model[0]['yes']))
+                            
+                            for k in range(0, len(targetProbabilities)):
+                                targetProbabilities[k] *= model[1][j][(nameTargets[k], singleFrame.iloc[0][j])]
                     
-                    "Sum of the two probabilities"
-                    sumOfTwo = probabilityYes + probabilityNo
+                    "Sum variable"
+                    sumTargets = 0
+                    
+                    "Get sum of all answers"
+                    for j in range(0, len(targetProbabilities)):
+                        sumTargets += model[0][nameTargets[j]]
         
-                    probabilityYes = probabilityYes / (sumOfTwo)
-                    probabilityNo = probabilityNo / (sumOfTwo)
-        
+                    "Finish probablities and then find guess"
+                    for j in range(0, len(targetProbabilities)):
+                        targetProbabilities[j] = targetProbabilities[j] * (model[0][nameTargets[j]] / sumTargets)
+                        
+                    "Sum for all probabilities"
+                    sumOfAll = 0
+                    
+                    "Sum of all targets"
+                    for j in range(0, len(targetProbabilities)):
+                        sumOfAll += targetProbabilities[j]
+                    
+                    "Finish probability calculation"
+                    for j in range(0, len(targetProbabilities)):
+                        targetProbabilities[j] = targetProbabilities[j] / sumOfAll
+                        
+                    "For the index of the highest probability"
+                    indexOfHighest = 0
+                    highestProbability = targetProbabilities[0]
+                    
+                    "Find position of highest probability in list"
+                    for j in range(0, len(targetProbabilities)):
+                        
+                        if targetProbabilities[j] > highestProbability:
+                            highestProbability = targetProbabilities[j]
+                            indexOfHighest = j
+                    
                     "Make the prediction"
-                    if probabilityYes > probabilityNo:
-                        print()
-                        print("The bayesian classifier predicts: Yes")
-                    else:
-                        print()
-                        print("The bayesian classifier predicts: No")
+                    print()
+                    print("The bayesian classifier predicts: ", nameTargets[indexOfHighest])
                     
                     "Put the single frame onto the main dataframe"
                     testDataFrame = testDataFrame.append(singleFrame, ignore_index = True)
@@ -408,18 +462,9 @@ def interactiveTest():
                     "Add one to count"
                     count += 1
                 except LookupError:
-                    print()
                     
-                    "Print out the columns of the bayesian model"
-                    for i in range(0, len(model)):
-                        if i == 1:
-                            for j in range(0, len(model[1])):
-                                print(model[2][j], ":")
-                                for k in model[i][j]:
-                                    print(k, model[i][j][k])
-                                print()
                     print()
-                    print("The item that you entered wasn't formated correctly. Please refer to the portion of the bayesian model above and try again.")
+                    print("The item that you entered wasn't formated correctly. Please try again.")
                     print()
             else:
                 keepGoing = False
