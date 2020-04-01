@@ -44,73 +44,89 @@ def py_nb():
             endMenu = True
         elif menuChoice == "1":
             
+            "Bool for quitting loop"
+            quitLoop = False
+            
             "Loop until valid filename"
-            while True:
+            while True and quitLoop == False:
                 
                 try:
                     
-                    fileName = input("Please enter the name of a csv file consisting of headers and training examples (will search user folder for file): ")
-            
-                    "Get the csv data"
-                    csvData = getCSV(fileName)
-                    break
+                    fileName = input("Please enter the name of a csv file consisting of headers and training examples (will search user folder for file) or 'Q'to quit: ")
+                    
+                    if fileName == 'Q':
+                        quitLoop = True
+                    else:
+                
+                        "Get the csv data"
+                        csvData = getCSV(fileName)
+                        break
                 except IOError:
                     print("Invalid filename. Please try again.")
-                    
-            "Print the data from the file"
-            print(csvData)
             
-            input("Press any key to find the Bayesian Classifier (Model)...")
-            print()
-            
-            "Get the model and print it"
-            model = bayes_model(csvData)
-            
-            "Set learnedModel to what model is"
-            learnedModel = copy.deepcopy(model)
-            
-            "Put the item in the dictionary"
-            bayList.update({fileName : learnedModel})
-            
-            print("The Bayesian Model for the file that you entered is: ")
-            print()
-            
-            "Print the model out"
-            for i in range(0, len(model)):
-                if i == 0:
-                    print(model[i])
-                    print()
-                    print("---------------------------------------------")
-                    print()
-                elif i == 1:
-                    for j in range(0, len(model[1])):
-                        print(model[2][j], ":")
-                        for k in model[i][j]:
-                            print(k, model[i][j][k])
+            if quitLoop == False:
+                
+                "Print the data from the file"
+                print()
+                print("The dataframe from the file that you entered is: ")
+                print()
+                print(csvData)
+                
+                input("Press any key to find the Bayesian Classifier (Model)...")
+                print()
+                
+                "Get the model and print it"
+                model = bayes_model(csvData)
+                
+                "Set learnedModel to what model is"
+                learnedModel = copy.deepcopy(model)
+                
+                "Put the item in the dictionary"
+                bayList.update({fileName : learnedModel})
+                
+                print("The Bayesian Model for the file that you entered is: ")
+                print()
+                
+                "Print the model out"
+                for i in range(0, len(model)):
+                    if i == 0:
+                        print(model[i])
                         print()
-                    print("---------------------------------------------")
-                    print()
-                elif i == 2:
-                    print(model[i])
-                    print()
-                    print("---------------------------------------------")
-                    print()
-                else:
-                    print(model[i])
-                    print()
+                        print("---------------------------------------------")
+                        print()
+                    elif i == 1:
+                        for j in range(0, len(model[1])):
+                            print(model[2][j], ":")
+                            for k in model[i][j]:
+                                print(k, model[i][j][k])
+                            print()
+                            print("---------------------------------------------")
+                            print()
+                    elif i == 2:
+                        print(model[i])
+                        print()
+                        print("---------------------------------------------")
+                        print()
+                    else:
+                        print(model[i])
+                        print()
                     
 
         elif menuChoice == "2":
             
-            "Open correct file"
-            file = open(str(fileName.split(".")[0]) + ".bin", "w")
-            
-            "Write to file and close it"
-            file.write(str(learnedModel))
-            file.close()
-            
-            input("The model has been saved (By default it is saved to the 'users' folder). Please hit any key to continue...")
-        
+            if fileName != "":
+                
+                "Open correct file"
+                file = open(str(fileName.split(".")[0]) + ".bin", "w")
+                
+                "Write to file and close it"
+                file.write(str(learnedModel))
+                file.close()
+                
+                input("The model has been saved (By default it is saved to the 'users' folder). Please hit any key to continue...")
+            else:
+                print("No model has been entered. Therefore, no model has been saved.")
+                
         elif menuChoice == "3":
             
             "Call testData function"
@@ -142,12 +158,19 @@ def getCSV(file):
 "Post: This function will test the accuracy of a given Bayesian Classifier (Model)"
 def testData():
    
+    "Bool to quit loop"
+    quitLoop = False
+    
     "Loop until valid filename is given"
-    while True:
+    while True and quitLoop == False:
         try:
             
             print()
-            nameModelFile = input("Please enter the name of the model file that is saved (Ex: weather.bin): ")
+            nameModelFile = input("Please enter the name of the model file that is saved (Ex: weather.bin) or 'Q' to quit: ")
+            
+            if nameModelFile == 'Q':
+                quitLoop = True
+                return
             
             "Open file"
             savedFile = open(nameModelFile, "r")
@@ -174,6 +197,14 @@ def testData():
     "Get file data from the bayesian list"
     model = bayList[nameCSVFile]
     
+    "Create two lists holding the target names and probabilities"
+    nameTargets = []
+    targetProbabilities = []
+    
+    "Fill nameTargets"
+    for i in range(0, len(model[0])):
+        nameTargets.append(list(model[0].keys())[i])
+    
     "Loop until valid filename is given"
     while True:
         try:
@@ -194,15 +225,17 @@ def testData():
     "Lists for predictions and actual decisions"
     predictionList = []
     actualList = []
-    
-    probabilityYes = 1
-    probabilityNo = 1
-    
-    for i in range(0, len(dfTest)):
-        "Reset the probability variables"
-        probabilityYes = 1
-        probabilityNo = 1
+
+    "Fill targetProbabilities with 1 originally"
+    for p in range(0, len(nameTargets)):
+        targetProbabilities.append(1)
         
+    for i in range(0, len(dfTest)):
+        
+        "Reset the probabilities"
+        for p in range(0, len(nameTargets)):
+            targetProbabilities[p] = 1
+            
         for j in range(0, len(dfTest.columns)):
             
             if j == len(dfTest.columns) - 1:
@@ -210,28 +243,46 @@ def testData():
                 "Append actualList with actual answer"
                 actualList.append(dfTest.iloc[i][j])
             else:
+                
+                "Multiply the probabilities"
+                for k in range(0, len(targetProbabilities)):
+                    targetProbabilities[k] *= model[1][j][(nameTargets[k], dfTest.iloc[i][j])]
+                        
+        "Sum variable"
+        sumTargets = 0
+        
+        "Get sum of all answers"
+        for j in range(0, len(targetProbabilities)):
+            sumTargets += model[0][nameTargets[j]]
+        
+        "Finish probablities and then find guess"
+        for j in range(0, len(targetProbabilities)):
+            targetProbabilities[j] = targetProbabilities[j] * (model[0][nameTargets[j]] / sumTargets)
+        
+        "Sum for all probabilities"
+        sumOfAll = 0
+        
+        "Sum of all targets"
+        for j in range(0, len(targetProbabilities)):
+            sumOfAll += targetProbabilities[j]
             
-                "Times the probability for the item"
-                probabilityYes *= model[1][j][('yes', dfTest.iloc[i][j])]
-                probabilityNo *= model[1][j][('no', dfTest.iloc[i][j])]
-                
-                
-        "Finish probabilities and then find guess"
-        probabilityYes = probabilityYes * (model[0]['yes'] / (model[0]['no'] + model[0]['yes']))
-        probabilityNo = probabilityNo * (model[0]['no'] / (model[0]['no'] + model[0]['yes']))
+        "Finish probability calculation"
+        for j in range(0, len(targetProbabilities)):
+            targetProbabilities[j] = targetProbabilities[j] / sumOfAll
         
-        "Sum of the two probabilities"
-        sumOfTwo = probabilityYes + probabilityNo
+        "For the index of the highest probability"
+        indexOfHighest = 0
+        highestProbability = targetProbabilities[0]
         
-        probabilityYes = probabilityYes / (sumOfTwo)
-        probabilityNo = probabilityNo / (sumOfTwo)
-        
+        "Find position of highest probability in list"
+        for j in range(0, len(targetProbabilities)):
+
+            if targetProbabilities[j] > highestProbability:
+                highestProbability = targetProbabilities[j]
+                indexOfHighest = j
+            
         "Append list with guess"
-        if probabilityYes > probabilityNo:
-            predictionList.append('yes')
-        else:
-            predictionList.append('no')
-            
+        predictionList.append(nameTargets[indexOfHighest])
     
     "Get the confusion matrix"
     confMatrix = confusion_matrix(actualList, predictionList)
