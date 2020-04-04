@@ -2,7 +2,10 @@
 """
 Created on Fri Mar 13 09:59:46 2020
 
-@author: adm_nds39
+@author: Nathaniel Shetler
+UANet ID: nds39
+ID Number: 4015423
+Class: Artificial Intelligence & Heuristic Programming
 """
 import pandas as pd
 import copy
@@ -123,7 +126,7 @@ def py_nb():
                 file.write(str(learnedModel))
                 file.close()
                 
-                input("The model has been saved (By default it is saved to the 'users' folder). Please hit any key to continue...")
+                input("The last model that was learned has been saved (By default it is saved to the 'users' folder). Please hit any key to continue...")
             else:
                 print("No model has been entered. Therefore, no model has been saved.")
                 
