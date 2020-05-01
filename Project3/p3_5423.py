@@ -22,7 +22,7 @@ import os
 "------------------------------------------------------------------------------"
 
 "The directory for saving the models"
-SAVE_DIR = os.path.join(os.getcwd(), 'logs\\')
+SAVE_DIR = os.path.join(os.getcwd(), 'logs\\p3_5423\\')
 
 "The number of classes will stay at 10 the whole time"
 NUM_CLASSES = 10
@@ -96,7 +96,8 @@ def runExample(numEpochs, batchSize, dataAugmentation, directoryName, modelName)
                   batch_size=batchSize,
                   epochs=numEpochs,
                   validation_data=(x_test, y_test),
-                  shuffle=True)
+                  shuffle=True,
+                  callbacks=[tensorboard_callback]) # "Added tensorboard callback"
     else:
         print('Using real-time data augmentation.')
         # This will do preprocessing and realtime data augmentation:
@@ -162,13 +163,16 @@ def programMenu():
     "This will tell the loop when to stop"
     quitLoop = False
     
+    "Run the menu until the user wants to quit"
     while quitLoop == False:
         
-        print("Please choose a task: ")
-        print("\t1.) Run Keras 2010 baseline test")
-        print("\t2.) Run multiple tests")
-        print("\t3.) Run the new found solution")
-        print("\t4.) Quit")
+        print("----------------------------------------------------------------")
+        print("| Please choose a task (Warning: Task 1 - 3 could take hours): |")
+        print("| \t1.) Run Keras 2010 baseline test                           |")
+        print("| \t2.) Run multiple tests                                     |")
+        print("| \t3.) Run the new found solution                             |")
+        print("| \t4.) Quit                                                   |")
+        print("----------------------------------------------------------------")
         
         userChoice = input()
         
@@ -179,24 +183,33 @@ def programMenu():
         elif userChoice == "2":
             "Run the tests"
             
+            "Run the baseline test"
+            """
+            runExample(100, 32, True, "baselineTest", "cifar10_cnn.h5")
+            """
+            
             "Change the number of epochs"
-            runExample(150, 32, True, "150epochs_32batch_True", "cifar10.h5")
-            runExample(200, 32, True, "200epochs_32batch_True", "cifar10.h5")
-            runExample(250, 32, True, "250epochs_32batch_True", "cifar10.h5")
+            runExample(150, 32, True, "150epochs_32batch_True", "cifar-10.h5")
+            runExample(200, 32, True, "200epochs_32batch_True", "cifar-10.h5")
+            runExample(250, 32, True, "250epochs_32batch_True", "cifar-10.h5")
             
             "Change the batch size"
-            runExample(100, 1, True, "100epochs_1batch_True", "cifar10.h5")
-            runExample(100, 16, True, "100epochs_16batch_True", "cifar10.h5")
-            runExample(100, 32, True, "100epochs_32batch_True", "cifar10.h5")
+            runExample(100, 1, True, "100epochs_1batch_True", "cifar-10.h5")
+            runExample(100, 16, True, "100epochs_16batch_True", "cifar-10.h5")
+            runExample(100, 32, True, "100epochs_32batch_True", "cifar-10.h5")
+            runExample(100, 64, True, "100epochs_64batch_True", "cifar-10.h5")
+            runExample(100, 128, True, "100epochs_128batch_True", "cifar-10.h5")
             
             "Turn data augmentation off for changing number of epochs"
-            runExample(100, 32, False, "100epochs_32batch_False", "cifar10.h5")
-            runExample(150, 32, False, "150epochs_32batch_False", "cifar10.h5")
-            runExample(200, 32, False, "200epochs_32batch_False", "cifar10.h5")
+            runExample(100, 32, False, "100epochs_32batch_False", "cifar-10.h5")
+            runExample(150, 32, False, "150epochs_32batch_False", "cifar-10.h5")
+            runExample(200, 32, False, "200epochs_32batch_False", "cifar-10.h5")
+            
             
         elif userChoice == "3":
-            "Run the solution that I found"
-        
+            "Run the best solution that I found"
+            runExample(100, 128, True, "100epochs_128batch_True", "cifar-10.h5")
+            
         elif userChoice == "4":
             
             "The user wants to quit. Set quitLoop to True"
