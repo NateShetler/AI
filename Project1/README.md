@@ -7,9 +7,9 @@ winning sequence and the user will be informed of this.
 
 States of the puzzle include numbers 1 - 8 and are in a 3 row by 3 column format. An example is as follows:
 
-1 6 4
-2 5 3
-8 7 
+1 6 4 <br>
+2 5 3 <br>
+8 7   <br>
 
 The project can solve the problem either by being "informed" and using the hamming priority function to find the winning sequence of the puzzle 
 or "uninformed" by guessing the next state in the sequence until the problem is solved. The winning sequence of the puzzle will be outputted into the
